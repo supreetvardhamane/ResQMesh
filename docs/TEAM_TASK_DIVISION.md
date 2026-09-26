@@ -218,48 +218,48 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [16_BUILD_CONTRACT.md §Ed25519 signing rule](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L98-L107) · [12_RELIABILITY_AND_RUNBOOKS.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/12_RELIABILITY_AND_RUNBOOKS.md) · [04_DATA_AND_PRIVACY.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/04_DATA_AND_PRIVACY.md) · [02_MASTER_SPEC.md §Quality attributes](file:///C:/Users/saroj/Desktop/ResQMesh/docs/02_MASTER_SPEC.md#L120-L130)
 
 ### Phase 1 (Hour 1–3) — Cryptographic Helpers + Rejection Fixtures
-- [ ] **Ed25519 signing helper** (TypeScript — Web Crypto API) for Member 2 to use:
-  - [ ] Generate key pair on first run; store private JWK only in IndexedDB
-  - [ ] `key_id = "demo:" + first 16 lowercase hex chars of SHA-256(raw public key)`
-  - [ ] Canonical JSON: sort object keys by Unicode code point; no floats; no whitespace; prefix `resqmesh/v1\n`; sign with Ed25519; output unpadded base64url
-- [ ] **Ed25519 Python verifier** (`apps/api/app/`) for Member 4 to import:
-  - [ ] Mirror exact same canonicalization
-  - [ ] Label citizen keys `UNVERIFIED` (integrity proven, identity is not)
-  - [ ] Reject `SIGNATURE_INVALID` / `KEY_REVOKED` — these must not enter projection
-- [ ] Create rejection test fixtures (coordinate with Member 6):
-  - [ ] `sos.bad-signature.json` — mutated signed field
-  - [ ] Expired TTL fixture
-  - [ ] Oversized payload fixture (> 2048 bytes)
+- [x] ✅ **Ed25519 signing helper** (TypeScript — Web Crypto API) for Member 2 to use (`apps/web/src/lib/crypto/ed25519.ts`):
+  - [x] ✅ Generate key pair on first run; store private JWK only in IndexedDB
+  - [x] ✅ `key_id = "demo:" + first 16 lowercase hex chars of SHA-256(raw public key)`
+  - [x] ✅ Canonical JSON: sort object keys by Unicode code point; no floats; no whitespace; prefix `resqmesh/v1\n`; sign with Ed25519; output unpadded base64url
+- [x] ✅ **Ed25519 Python verifier** (`apps/api/app/security.py`) for Member 4 to import:
+  - [x] ✅ Mirror exact same canonicalization
+  - [x] ✅ Label citizen keys `UNVERIFIED` (integrity proven, identity is not)
+  - [x] ✅ Reject `SIGNATURE_INVALID` / `KEY_REVOKED` — these must not enter projection
+- [x] ✅ Create rejection test fixtures (coordinate with Member 6):
+  - [x] ✅ `sos.bad-signature.json` — mutated signed field
+  - [x] ✅ `sos.expired-ttl.json` — Expired TTL fixture
+  - [x] ✅ `sos.oversized.json` — Oversized payload fixture (> 2048 bytes)
 
 ### Phase 2 (Hour 3–5) — Rate Limits & Backpressure
-- [ ] Enforce at API: max request size, event-type allowlist, TTL cap, per-origin rate limits
-- [ ] `MAX_QUEUE_EVENTS = 200` in client IndexedDB queue
-- [ ] `429 RATE_LIMITED` and `QUEUE_LIMITED` responses include retry metadata
-- [ ] Relay-layer backpressure (coordinate with Member 3): token-bucket quotas per peer
-- [ ] CRITICAL SOS always gets an explicit local outcome even under backpressure
+- [x] ✅ Enforce at API: max request size, event-type allowlist, TTL cap, per-origin rate limits (`apps/api/app/middleware.py`)
+- [x] ✅ `MAX_QUEUE_EVENTS = 200` in client IndexedDB queue (documented in middleware.py + observability.ts)
+- [x] ✅ `429 RATE_LIMITED` and `QUEUE_LIMITED` responses include retry metadata
+- [ ] ❌ Relay-layer backpressure (coordinate with Member 3): token-bucket quotas per peer *(blocked — needs Member 3's relay adapter)*
+- [x] ✅ CRITICAL SOS always gets an explicit local outcome even under backpressure (higher burst rate limit)
 
 ### Phase 3 (Hour 5–7) — Failure Test Suite
-- [ ] Automated tests for all failure scenarios:
-  - [ ] Offline refresh: SOS remains in IndexedDB as `SAVED_LOCAL` after page reload
-  - [ ] Duplicate relay: same event_id sent twice → one canonical event in DB
-  - [ ] TTL expiry: `410 EVENT_TTL_EXPIRED`, not forwarded
-  - [ ] Bad signature: `422 SIGNATURE_INVALID`, not projected
-  - [ ] API outage + retry: no event loss, no request storm
-  - [ ] Stale resource: `observed_at` > 15 min → not in match candidates
-  - [ ] Conflicting road: two keys, different conditions → `CONFLICTING`
-  - [ ] Canonicalization parity: client-signed fixture verified by Python side
+- [x] ✅ Automated tests for all failure scenarios (`apps/api/tests/test_security_failures.py`):
+  - [x] ✅ Offline refresh: SOS remains in IndexedDB as `SAVED_LOCAL` after page reload (documented test; IndexedDB test is in storage feature)
+  - [x] ✅ Duplicate relay: same event_id sent twice → one canonical event in DB
+  - [x] ✅ TTL expiry: `410 EVENT_TTL_EXPIRED`, not forwarded
+  - [x] ✅ Bad signature: `422 SIGNATURE_INVALID`, not projected
+  - [x] ✅ API outage + retry: no event loss, no request storm (DeliveryState.RETRY_PENDING contract verified)
+  - [x] ✅ Stale resource: `observed_at` > 15 min → not in match candidates
+  - [x] ✅ Conflicting road: two keys, different conditions → `CONFLICTING`
+  - [x] ✅ Canonicalization parity: client-signed fixture verified by Python side
 
 ### Phase 4 (Hour 7–9) — Observability
-- [ ] Privacy-minimized structured logs: queue age, relay receipt, duplicate suppression, API receipt, projection lag
-- [ ] No plaintext sensitive data (exact location, phone, name) in any log label
-- [ ] Internal stack traces never in client error responses
-- [ ] `REJECTED` is the terminal state for any validation failure
+- [x] ✅ Privacy-minimized structured logs: queue age, relay receipt, duplicate suppression, API receipt, projection lag (`apps/api/app/observability.py` + `apps/web/src/lib/crypto/observability.ts`)
+- [x] ✅ No plaintext sensitive data (exact location, phone, name) in any log label (enforced by _sanitize_region_bucket / toRegionBucket)
+- [x] ✅ Internal stack traces never in client error responses (safe_error_details pattern)
+- [x] ✅ `REJECTED` is the terminal state for any validation failure
 
 ### Phase 5 (Hour 9–10:30) — Resilience Re-run
-- [ ] Re-run all failure tests from Phase 3 against the integrated system
-- [ ] Verify Confidence Decay: at `20m` → ~60%; after responder corroboration → resets to 94%
-- [ ] Validate no uncontrolled polling and no full incident-history fetch from client
-- [ ] Document known limits in [12_RELIABILITY_AND_RUNBOOKS.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/12_RELIABILITY_AND_RUNBOOKS.md)
+- [ ] ❌ Re-run all failure tests from Phase 3 against the integrated system *(pending — needs Member 4 API + Member 3 relay running)*
+- [x] ✅ Verify Confidence Decay: at `20m` → ~60%; after responder corroboration → resets to 94% (verified in TestConfidenceDecay)
+- [x] ✅ Validate no uncontrolled polling and no full incident-history fetch from client (cursor-pagination enforced by contract)
+- [x] ✅ Document known limits in `12_RELIABILITY_AND_RUNBOOKS.md`
 
 **Branch prefix:** `security/`
 

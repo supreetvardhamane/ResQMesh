@@ -1,0 +1,21 @@
+{
+  "_fixture_note": "EXPIRED TTL FIXTURE — created_at is set far in the past so TTL has elapsed. Used by Member 5 tests. Relaying or ingesting this MUST be rejected with 410 EVENT_TTL_EXPIRED. MAX_TTL_SECONDS = 3600. This event was created on 2026-09-25 (yesterday) with ttl_seconds=1800 (30 min), so it expired ~23.5 hours ago.",
+  "_test_key_warning": "This fixture uses a test key. FORBIDDEN from deployed environments.",
+  "schema_version": 1,
+  "event_id": "expired-001-0000-0000-000000000001",
+  "type": "SOS_CREATED",
+  "incident_id": "demo-flood-2026",
+  "created_at": "2026-09-25T10:30:00Z",
+  "ttl_seconds": 1800,
+  "priority": "HIGH",
+  "origin": {
+    "kind": "CITIZEN",
+    "key_id": "demo:a1b2c3d4e5f6a7b8",
+    "public_key_b64url": "PLACEHOLDER_TEST_PUBLIC_KEY_BASE64URL"
+  },
+  "location_geohash": "tdr1q0",
+  "payload": {
+    "need": "FOOD_WATER"
+  },
+  "signature_b64url": "PLACEHOLDER_EXPIRED_TEST_SIGNATURE_BASE64URL"
+}
