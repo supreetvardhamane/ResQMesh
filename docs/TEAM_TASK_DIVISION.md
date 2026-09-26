@@ -169,47 +169,47 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [16_BUILD_CONTRACT.md §P0 HTTP endpoints](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L176-L192) · [05_API_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md) · [16_BUILD_CONTRACT.md §Storage schema](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L136-L153) · [02_MASTER_SPEC.md §Domain model](file:///C:/Users/saroj/Desktop/ResQMesh/docs/02_MASTER_SPEC.md#L51-L62)
 
 ### Phase 1 (Hour 1–3) — API Skeleton + DB
-- [ ] **FastAPI skeleton** (`apps/api/app/main.py`):
-  - [ ] Health endpoint: `GET /healthz`
-  - [ ] Typed Pydantic v2 models for all event types in `apps/api/app/contracts.py` — use enums from [16_BUILD_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L36-L68)
-  - [ ] Request validation order exactly as per [05_API_CONTRACT.md §Request validation order](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md#L67-L76): size → schema → auth → idempotency → signature → persist → async project
-- [ ] **PostgreSQL 16 schema** (via Alembic migration):
-  - [ ] `events` table with all columns and indexes
-  - [ ] `resources` table
-  - [ ] `assignments` table with FK references
-  - [ ] Indexes: `(incident_id, created_at desc)` and `(incident_id, region_geohash, type)` on events; `(incident_id, capability, status, observed_at desc)` on resources
-  - [ ] PostgreSQL 16 only — no PostGIS, no Neo4j, no SQLite substitution
-- [ ] Seed deterministic synthetic incident: `incident_id = demo-flood-2026`, one medical SOS, ambulance resource, hospital bed resource, two conflicting road reports
+- [x] ✅ **FastAPI skeleton** (`apps/api/app/main.py`):
+  - [x] ✅ Health endpoint: `GET /healthz`
+  - [x] ✅ Typed Pydantic v2 models for all event types in `apps/api/app/contracts.py` — use enums from [16_BUILD_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L36-L68) *(contracts.py created by M1, used as-is)*
+  - [x] ✅ Request validation order exactly as per [05_API_CONTRACT.md §Request validation order](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md#L67-L76): size → schema → auth → idempotency → signature → persist → async project
+- [x] ✅ **PostgreSQL 16 schema** (SQLAlchemy ORM in `apps/api/app/db/models.py`):
+  - [x] ✅ `events` table with all columns and indexes
+  - [x] ✅ `resources` table
+  - [x] ✅ `assignments` table with FK references
+  - [x] ✅ Indexes: `(incident_id, created_at desc)` and `(incident_id, region_geohash, type)` on events; `(incident_id, capability, status, observed_at desc)` on resources
+  - [x] ✅ PostgreSQL 16 only — no PostGIS, no Neo4j, no SQLite substitution
+- [x] ✅ Seed deterministic synthetic incident (`apps/api/app/db/seed.py`): `incident_id = demo-flood-2026`, one medical SOS, ambulance resource, hospital bed resource, two conflicting road reports
 
 ### Phase 2 (Hour 3–5) — Core Endpoints
-- [ ] `POST /v1/events`:
-  - [ ] Returns `201` for new canonical event, `200` for byte-identical replay, `409 EVENT_ID_CONFLICT` for changed bytes on same ID
-  - [ ] Requires `Idempotency-Key` header
-  - [ ] Ed25519 signature verification (use Member 5's Python verifier)
-  - [ ] Reject unknown body fields
-  - [ ] Return receipt with `request_id`
-- [ ] `GET /v1/incidents/{incident_id}/events` — cursor-paginated, returns `as_of` time
-- [ ] `POST /v1/sync/pull` and `POST /v1/sync/ack` — bridge sync endpoints
+- [x] ✅ `POST /v1/events` (`apps/api/app/routes/events.py` + `services/event_service.py`):
+  - [x] ✅ Returns `201` for new canonical event, `200` for byte-identical replay, `409 EVENT_ID_CONFLICT` for changed bytes on same ID
+  - [x] ✅ Requires `Idempotency-Key` header
+  - [x] ✅ Ed25519 signature verification (uses M5's `security.py` `verify_envelope_signature()`)
+  - [x] ✅ Reject unknown body fields (via Pydantic `extra = "forbid"` in contracts.py)
+  - [x] ✅ Return receipt with `request_id`
+- [x] ✅ `GET /v1/incidents/{incident_id}/events` — cursor-paginated, returns `as_of` time
+- [x] ✅ `POST /v1/sync/pull` and `POST /v1/sync/ack` — bridge sync endpoints (`apps/api/app/routes/sync.py`)
 
 ### Phase 3 (Hour 5–7) — Matching & Trust Projection
-- [ ] `POST /v1/resources` — register/update resource with `observed_at`
-- [ ] `GET /v1/resources/matches?need_event_id=`:
-  - [ ] Deterministic match rule: capability → status AVAILABLE → available_units > 0 → first 4 geohash chars match → observed_at ≤ 15 min
-  - [ ] Capability mapping: `MEDICAL→AMBULANCE,HOSPITAL_BED`; `SHELTER→SHELTER_BED`; `FOOD_WATER→FOOD_WATER`; `RESCUE→AMBULANCE`
-  - [ ] Sort: exact geohash → capability order → newest observation → stable resource_id
-  - [ ] Return max 3 candidates with `rationale[]` array
-- [ ] Trust classification: same subject + first-4-char region + within 30 min → `CONFLICTING` or `CORROBORATED`; else `UNVERIFIED`
-- [ ] `POST /v1/reports/{id}/corroborations` — add evidence without overwriting
-- [ ] `POST /v1/assignments` — responder role required; fails for unavailable/stale resource
-- [ ] `PATCH /v1/assignments/{assignment_id}` — update state/reason/time
+- [x] ✅ `POST /v1/resources` — register/update resource with `observed_at`; stale update retained, not silently overwritten
+- [x] ✅ `GET /v1/resources/matches?need_event_id=` (`apps/api/app/services/resource_service.py`):
+  - [x] ✅ Deterministic match rule: capability → status AVAILABLE → available_units > 0 → first 4 geohash chars match → observed_at ≤ 15 min
+  - [x] ✅ Capability mapping: `MEDICAL→AMBULANCE,HOSPITAL_BED`; `SHELTER→SHELTER_BED`; `FOOD_WATER→FOOD_WATER`; `RESCUE→AMBULANCE`
+  - [x] ✅ Sort: exact geohash → capability order → newest observation → stable resource_id
+  - [x] ✅ Return max 3 candidates with `rationale[]` array
+- [x] ✅ Trust classification: same subject + first-4-char region + within 30 min → `CONFLICTING` or `CORROBORATED`; else `UNVERIFIED`
+- [x] ✅ `POST /v1/reports/{id}/corroborations` — add evidence without overwriting (`apps/api/app/routes/reports.py`)
+- [x] ✅ `POST /v1/assignments` — responder role required; fails for unavailable/stale resource
+- [x] ✅ `PATCH /v1/assignments/{assignment_id}` — update state/reason/time
 
 ### Phase 4 (Hour 7–9) — Error Contract + Config
-- [ ] Return exact error shape: `{ code, message, request_id, retryable, details? }` for all error codes in [05_API_CONTRACT.md §Error contract](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md#L79-L101)
-- [ ] Typed configuration validator that fails safely at startup
-- [ ] Emit structured telemetry per event (queue age, relay receipt, duplicate suppression, API receipt, projection lag)
-- [ ] CAP/GeoJSON endpoints (`GET /v1/interop/cap/{id}`, `POST /v1/interop/geojson`) — only if all above are complete
+- [x] ✅ Return exact error shape: `{ code, message, request_id, retryable, details? }` for all error codes in [05_API_CONTRACT.md §Error contract](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md#L79-L101)
+- [x] ✅ Typed configuration validator that fails safely at startup (`apps/api/app/config.py`)
+- [x] ✅ Emit structured telemetry per event (uses M5's `observability.py`: queue age, relay receipt, duplicate suppression, API receipt, projection lag)
+- [ ] ❌ CAP/GeoJSON endpoints (`GET /v1/interop/cap/{id}`, `POST /v1/interop/geojson`) — deferred (all core endpoints working first)
 
-**Branch prefix:** `backend/`
+**Branch prefix:** `backend/` *(built on branch `saroj`)*
 
 ---
 
