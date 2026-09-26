@@ -1,0 +1,25 @@
+# ResQMesh — Local Development Docker Compose
+# PostgreSQL 16 (no extensions) as defined in 16_BUILD_CONTRACT.md
+# Usage: docker compose -f infra/compose.yaml up -d
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: resqmesh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resqmesh
+      POSTGRES_PASSWORD: resqmesh_dev
+      POSTGRES_DB: resqmesh
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resqmesh"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
