@@ -74,50 +74,63 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [16_BUILD_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md) · [02_MASTER_SPEC.md §UI requirements](file:///C:/Users/saroj/Desktop/ResQMesh/docs/02_MASTER_SPEC.md#L111-L118) · [05_API_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md) · [03_ARCHITECTURE_DESIGN.md §Client](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L23-L26)
 
 ### Phase 1 (Hour 1–3) — Foundation
-- [ ] **SOS Form** (`apps/web/src/features/sos/`):
-  - [ ] Mobile-first form at 360 px viewport; SOS button visible without scroll
-  - [ ] Fields: need category (`MEDICAL | RESCUE | FOOD_WATER | SHELTER`), priority (`CRITICAL | HIGH | NORMAL`), geohash location (6-char) — no free text name/phone
-  - [ ] Confirmation step that summarizes payload before submit
-  - [ ] Ed25519 key generation on first run — store private JWK in IndexedDB only (coordinate with Member 5)
-  - [ ] Sign the envelope exactly per [16_BUILD_CONTRACT.md §Ed25519 signing rule](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L98-L107)
-- [ ] **IndexedDB Queue** (`apps/web/src/lib/storage/`):
-  - [ ] Persist events to IndexedDB on submit (`SAVED_LOCAL`)
-  - [ ] Queue survives browser refresh — write a persistence test (automated)
-  - [ ] Implement delivery state transitions: `DRAFT → SAVED_LOCAL → QUEUED_FOR_RELAY`
-- [ ] **Network/Status Bar** (`apps/web/src/features/relay/`):
-  - [ ] Show `OFFLINE`, `RELAYING`, `BRIDGE_AVAILABLE`, `SYNCED`, `FAILED` — plain text, not color-only
-  - [ ] Status must distinguish local-saved vs peer-acked vs bridge-confirmed vs server-synced
+- [x] ✅ **SOS Form** (`apps/web/src/features/sos/SOSForm.tsx`):
+  - [x] ✅ Mobile-first form at 360 px viewport; SOS button visible without scroll (`minHeight: 56px`, full-width)
+  - [x] ✅ Fields: need category (`MEDICAL | RESCUE | FOOD_WATER | SHELTER`), priority (`CRITICAL | HIGH | NORMAL`), geohash location (6-char) — no free text name/phone
+  - [x] ✅ Confirmation step that summarizes payload before submit (FORM → CONFIRM → SUBMITTED flow)
+  - [x] ✅ Ed25519 key generation on first run — private JWK stored ONLY in IndexedDB (uses Member 5's `lib/crypto/ed25519.ts`)
+  - [x] ✅ Signs envelope exactly per build contract `§Ed25519 signing rule` — `resqmesh/v1\n` prefix, canonical JSON, unpadded base64url
+- [x] ✅ **IndexedDB Queue** (`apps/web/src/lib/storage/queue.ts`):
+  - [x] ✅ Persists events to IndexedDB on submit (→ `SAVED_LOCAL`)
+  - [x] ✅ Queue survives browser refresh — automated persistence test in `sos/persistenceTest.ts`
+  - [x] ✅ Delivery state transitions: `DRAFT → SAVED_LOCAL → QUEUED_FOR_RELAY`; MAX_QUEUE_EVENTS=200 enforced
+- [x] ✅ **Network/Status Bar** (`apps/web/src/features/relay/StatusBar.tsx`):
+  - [x] ✅ Shows `OFFLINE`, `RELAYING`, `BRIDGE_AVAILABLE`, `SYNCED`, `FAILED` — text label + icon (never color-only)
+  - [x] ✅ Covers full delivery state set: local-saved / peer-acked / bridge-confirmed / server-synced
 
 ### Phase 2 (Hour 3–5) — Relay Integration
-- [ ] Connect to Member 3's relay adapter — use the `EVENT_OFFER → EVENT_REQUEST → EVENT_PUSH → EVENT_ACK` flow
-- [ ] Transition state to `PEER_ACKED` only on `ACCEPTED` or `DUPLICATE` ACK
-- [ ] Transition state to `BRIDGE_ACKED` when bridge confirms receipt
-- [ ] Transition state to `SYNCED` only when `POST /v1/events` returns canonical receipt
-- [ ] Implement `RETRY_PENDING → QUEUED_FOR_RELAY` retry loop with backoff
+- [x] ✅ **RelayClient** (`apps/web/src/features/relay/RelayClient.ts`): full `EVENT_OFFER → EVENT_REQUEST → EVENT_PUSH → EVENT_ACK` flow
+- [x] ✅ Transitions state to `PEER_ACKED` ONLY on `ACCEPTED` or `DUPLICATE` ACK (per contract)
+- [x] ✅ `BRIDGE_ACKED` path handled; `SYNCED` driven by API `POST /v1/events` 201 receipt
+- [x] ✅ Retry loop: `RETRY_PENDING → QUEUED_FOR_RELAY` with exponential backoff (2s → 30s cap)
+- [x] ✅ **RelayManager**: enforces `MAX_ACTIVE_PEERS = 4`; peer discovery via `__RELAY_WS_URL__` env
+- [ ] ❌ Live integration with Member 3's relay adapter *(blocked — mesh/relay branch not yet merged)*
 
-### Phase 3 (Hour 5–7) — Responder & Resources UI
-- [ ] **Responder Console** (`apps/web/src/features/responder/`):
-  - [ ] Display incident events (cursor-paginated, no full-history download)
-  - [ ] Show provenance panel: origin, signature state, relay hops, freshness, trust state (`UNVERIFIED | CORROBORATED | CONFLICTING | REJECTED`)
-  - [ ] Confidence Decay UI: derive `confidence_pct` per [16_BUILD_CONTRACT.md §Confidence Decay formula](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L165-L170); update once per second
-  - [ ] Color/opacity thresholds: 80–94 = solid red; 60–79 = amber 0.72; <60 = dim red/gray 0.45
-  - [ ] Demo simulated-clock control: `0m`, `10m`, `20m` buttons
-  - [ ] Corroborate road observation button (responder action resets confidence)
-- [ ] **Resources View** (`apps/web/src/features/resources/`):
-  - [ ] Show candidate match list from `GET /v1/resources/matches?need_event_id=`
-  - [ ] Display rationale array (factual, not AI score)
-  - [ ] Assignment proposal/acceptance: only a responder can create an assignment
+### Phase 3 (Hour 5–7) — Responder \& Resources UI
+- [x] ✅ **Responder Console** (`apps/web/src/features/responder/ResponderConsole.tsx`):
+  - [x] ✅ Cursor-paginated incident events (`GET /v1/incidents/{id}/events?cursor=&limit=10`) — no full-history download
+  - [x] ✅ Provenance panel (`ProvenancePanel.tsx`): origin, signature state, relay hops, freshness, trust state — all text labels, not color-only
+  - [x] ✅ Confidence Decay (`ConfidenceDecay.tsx`): exact formula from build contract; updates every 1 second
+  - [x] ✅ Color/opacity thresholds: 80–94 = solid red; 60–79 = amber 0.72; <60 = dim red/gray 0.45
+  - [x] ✅ Demo clock: `0m`, `10m`, `20m` buttons with `aria-pressed`
+  - [x] ✅ Corroborate road observation button resets `lastConfirmedAt` and increments confirming key count
+- [x] ✅ **Resources View** (`apps/web/src/features/resources/ResourceMatches.tsx`):
+  - [x] ✅ `GET /v1/resources/matches?need_event_id=` with loading / empty / error / retry states
+  - [x] ✅ Rationale array displayed per match (factual bullet list, not AI score)
+  - [x] ✅ Assignment proposal `POST /v1/assignments` gated to `responderId` prop (responder only)
 
-### Phase 4 (Hour 7–9) — UX Polish & Accessibility
-- [ ] Every async action has: loading, success, empty, error, retry states
-- [ ] Long lists paginate or virtualize — no full feed download
-- [ ] Map is optional: locality/geohash text must work without Leaflet tiles
-- [ ] Keyboard navigation works for the entire core journey
-- [ ] 44 px touch targets; visible focus; status text not color-only
-- [ ] Add `prefers-reduced-motion` support for confidence decay pulse (250 ms pulse → color/text only)
-- [ ] Add explicit labels: "Prototype transport", "Synthetic data", "Planned capability" where applicable
+### Phase 4 (Hour 7–9) — UX Polish \& Accessibility
+- [x] ✅ Every async action has: loading (aria-busy), success, empty, error, retry states
+- [x] ✅ Long lists: cursor-paginated (PAGE_LIMIT=10) — no full feed download
+- [x] ✅ Map is optional: all UI uses geohash text (first 4 chars); no Leaflet dependency in emergency path
+- [x] ✅ Keyboard navigation: arrow-key tab switching in `App.tsx`; `tabIndex` management; form submittable by keyboard
+- [x] ✅ 44 px touch targets: all buttons use `minHeight: 44px`; inputs `minHeight: 44px`
+- [x] ✅ `prefers-reduced-motion`: ConfidenceDecay checks `window.matchMedia` — no 250ms pulse; color/text only
+- [x] ✅ Labels: "Prototype transport", "Synthetic data", "Planned capability" added in relevant components
+- [x] ✅ App scaffold: `package.json` (pinned versions), `tsconfig.json`, `vite.config.ts`, `index.html`, `main.tsx`, `App.tsx`
 
-**Branch prefix:** `client/`
+**Branch:** `client/satya` (committed — ready for review and merge to `main`)
+
+**Checkpoint handoff (Member 2 → Member 1 at CP1):**
+
+| Field | Status |
+|-------|--------|
+| Completed tasks | All Phase 1–4 items ✅ (see above) |
+| Changed contracts | None — imports from `packages/contracts/types.ts` only |
+| Verification evidence | `persistenceTest.ts`: save/read-back/state-update/remove verified |
+| Current blocker | Live relay integration blocked on Member 3 merge |
+| Next dependency | Member 3 relay WS URL + Member 4 API live endpoints |
+| Golden path status | **Partially** — SOS → SAVED_LOCAL works ✅; relay/API pending Members 3+4 |
 
 ---
 
