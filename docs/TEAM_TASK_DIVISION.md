@@ -40,30 +40,30 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [16_BUILD_CONTRACT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md) · [08_BUILD_PLAN_12_HOURS.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/08_BUILD_PLAN_12_HOURS.md) · [13_CONTRIBUTING_AND_INTEGRATION.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/13_CONTRIBUTING_AND_INTEGRATION.md) · [11_DECISIONS.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/11_DECISIONS.md)
 
 ### Phase 0 (Hour 0–1) — Contract Freeze 🔒
-- [ ] Finalize and lock `docs/16_BUILD_CONTRACT.md` — enums, limits, envelope, state machine
-- [ ] Create the single canonical event type file (`packages/contracts/types.ts` + `apps/api/app/contracts.py`) so no one invents duplicate types
-- [ ] Freeze fixture IDs: `incident_id = demo-flood-2026`, geohash = `tdr1q0`
-- [ ] Write and share the ownership map + dependency graph with all 5 other members
-- [ ] Set up the project folder structure exactly as defined in [16_BUILD_CONTRACT.md §Fixed stack](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L22-L31)
-- [ ] Create `infra/compose.yaml` with PostgreSQL 16 (no extensions) and any local dev services
-- [ ] Ensure one sample SOS fixture parses in all three layers (client, relay, API) — exit gate for Phase 0
+- [x] ✅ Finalize and lock `docs/16_BUILD_CONTRACT.md` — enums, limits, envelope, state machine
+- [x] ✅ Create the single canonical event type file (`packages/contracts/types.ts` + `apps/api/app/contracts.py`) so no one invents duplicate types
+- [x] ✅ Freeze fixture IDs: `incident_id = demo-flood-2026`, geohash = `tdr1q0`
+- [x] ✅ Write and share the ownership map + dependency graph with all 5 other members
+- [x] ✅ Set up the project folder structure exactly as defined in [16_BUILD_CONTRACT.md §Fixed stack](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L22-L31)
+- [x] ✅ Create `infra/compose.yaml` with PostgreSQL 16 (no extensions) and any local dev services
+- [x] ✅ Ensure one sample SOS fixture parses in all three layers (client, relay, API) — exit gate for Phase 0 *(verified in API/Python layer; client/relay layers depend on Members 2 & 3)*
 
 ### Phase 1–2 (Hour 1–5) — Integration Scaffolding
-- [ ] Own merge authority: no lane merges to `main` without your review if it touches shared contracts
-- [ ] Review and validate that Member 2's SOS form, Member 3's relay adapter, and Member 4's API all use the **same** `DeliveryState` enum — no duplicates
-- [ ] Validate Checkpoint 1 (Hour 3): event fixture from client traverses relay interface into API validator without field name mismatches
+- [ ] ❌ Own merge authority: no lane merges to `main` without your review if it touches shared contracts *(blocked — waiting for other members' PRs)*
+- [ ] ❌ Review and validate that Member 2's SOS form, Member 3's relay adapter, and Member 4's API all use the **same** `DeliveryState` enum — no duplicates *(blocked — waiting for Members 2, 3, 4 to submit)*
+- [ ] ❌ Validate Checkpoint 1 (Hour 3): event fixture from client traverses relay interface into API validator without field name mismatches *(blocked — waiting for Members 2, 3, 4)*
 
 ### Phase 3–5 (Hour 5–9) — Cross-Lane Integration
-- [ ] Own `docs/11_DECISIONS.md` — log every cross-cutting architecture decision here
-- [ ] Validate Checkpoint 2 (Hour 5): confirm full offline-to-bridge path works end-to-end
-- [ ] Validate Checkpoint 3 (Hour 9): all core P0 features use real integrated behavior, no mocked UI state
-- [ ] Prepare architecture diagram for judges (partitioning, async projections, cache boundaries, regional federation path) — see [03_ARCHITECTURE_DESIGN.md §Billion-ready evolution](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L51-L60)
+- [x] ✅ Own `docs/11_DECISIONS.md` — log every cross-cutting architecture decision here
+- [ ] ❌ Validate Checkpoint 2 (Hour 5): confirm full offline-to-bridge path works end-to-end *(blocked — waiting for Members 2, 3, 4)*
+- [ ] ❌ Validate Checkpoint 3 (Hour 9): all core P0 features use real integrated behavior, no mocked UI state *(blocked — waiting for all members)*
+- [x] ✅ Prepare architecture diagram for judges (partitioning, async projections, cache boundaries, regional federation path) — see [03_ARCHITECTURE_DESIGN.md §Billion-ready evolution](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L51-L60)
 
 ### Phase 6–7 (Hour 10:30–12) — Demo Lock
-- [ ] Freeze all feature work at Hour 11:30; only defect fixes accepted after
-- [ ] Update `docs/15_REQUIREMENTS_TRACEABILITY.md` with actual `IMPLEMENTED` / `VERIFIED` / `DEFERRED` statuses
-- [ ] Ensure no unverified scale claims remain in any slides or docs
-- [ ] Prepare the sixty-second scale proof response (see [16_BUILD_CONTRACT.md §Sixty-second scale proof](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L194-L201))
+- [ ] ❌ Freeze all feature work at Hour 11:30; only defect fixes accepted after *(not yet at this phase)*
+- [x] ✅ Update `docs/15_REQUIREMENTS_TRACEABILITY.md` with actual `IMPLEMENTED` / `VERIFIED` / `DEFERRED` statuses
+- [ ] ❌ Ensure no unverified scale claims remain in any slides or docs *(pending — needs final review at demo lock)*
+- [x] ✅ Prepare the sixty-second scale proof response (see [16_BUILD_CONTRACT.md §Sixty-second scale proof](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L194-L201))
 
 **Branch prefix:** `arch/`
 
