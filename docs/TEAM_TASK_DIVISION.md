@@ -126,39 +126,39 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [16_BUILD_CONTRACT.md §WebSocket frame contract](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L120-L134) · [03_ARCHITECTURE_DESIGN.md §Mesh communication](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L28-L31) · [05_API_CONTRACT.md §Transport contract](file:///C:/Users/saroj/Desktop/ResQMesh/docs/05_API_CONTRACT.md#L59-L62)
 
 ### Phase 1 (Hour 1–3) — Relay Core
-- [ ] **WebSocket relay adapter** (`apps/web/src/lib/relay/`):
-  - [ ] Implement all 7 frame types: `HELLO`, `EVENT_OFFER`, `EVENT_REQUEST`, `EVENT_PUSH`, `EVENT_ACK`, `PING`, `PONG`
-  - [ ] Every frame must carry: `frame_type`, `protocol_version: 1`, `frame_id` (UUID v4), `sent_at` (UTC ISO-8601)
-  - [ ] Reject frames > `MAX_FRAME_BYTES = 3072` **before** parsing envelope
-  - [ ] Maintain max `MAX_ACTIVE_PEERS = 4` connections
-- [ ] **Duplicate suppression cache:**
-  - [ ] Store up to `MAX_DEDUPE_IDS = 1024` event IDs
-  - [ ] Suppress forwarding if event_id already seen
-- [ ] **TTL enforcement:**
-  - [ ] Reject forwarding if `ttl_seconds` has elapsed since `created_at`
-  - [ ] `MIN_TTL_SECONDS = 60`, `DEFAULT_TTL_SECONDS = 1800`, `MAX_TTL_SECONDS = 3600`
-- [ ] **Hop count enforcement:** never forward when `hop_count >= MAX_HOPS (= 3)` — even if TTL remains. `hop_count` is a relay frame field, never a signed envelope field.
+- [x] ✅ **WebSocket relay adapter** (`apps/web/src/lib/relay/`):
+  - [x] ✅ Implement all 7 frame types: `HELLO`, `EVENT_OFFER`, `EVENT_REQUEST`, `EVENT_PUSH`, `EVENT_ACK`, `PING`, `PONG`
+  - [x] ✅ Every frame must carry: `frame_type`, `protocol_version: 1`, `frame_id` (UUID v4), `sent_at` (UTC ISO-8601)
+  - [x] ✅ Reject frames > `MAX_FRAME_BYTES = 3072` **before** parsing envelope
+  - [x] ✅ Maintain max `MAX_ACTIVE_PEERS = 4` connections
+- [x] ✅ **Duplicate suppression cache:**
+  - [x] ✅ Store up to `MAX_DEDUPE_IDS = 1024` event IDs
+  - [x] ✅ Suppress forwarding if event_id already seen
+- [x] ✅ **TTL enforcement:**
+  - [x] ✅ Reject forwarding if `ttl_seconds` has elapsed since `created_at`
+  - [x] ✅ `MIN_TTL_SECONDS = 60`, `DEFAULT_TTL_SECONDS = 1800`, `MAX_TTL_SECONDS = 3600`
+- [x] ✅ **Hop count enforcement:** never forward when `hop_count >= MAX_HOPS (= 3)` — even if TTL remains. `hop_count` is a relay frame field, never a signed envelope field.
 
 ### Phase 2 (Hour 3–5) — Bridge Simulator
-- [ ] **Bridge simulator** (simulated rescue vehicle):
-  - [ ] Acts as a relay peer that also has HTTP connectivity to the backend
-  - [ ] On receiving a valid event via relay, calls `POST /v1/events` idempotently
-  - [ ] Implements `POST /v1/sync/pull` + `POST /v1/sync/ack` loop (cursor-based, page ≤ 50 events or 100 KB)
-  - [ ] Transitions event state to `BRIDGE_ACKED` on its own receipt; waits for API `201` to signal `SYNCED`
-- [ ] **Two simulated peers** for local development/demo: Phone A (origin), Phone B (relay hop), Bridge (bridge node)
-- [ ] Validate: two duplicate relays from same event_id → only one canonical event at API
+- [x] ✅ **Bridge simulator** (simulated rescue vehicle):
+  - [x] ✅ Acts as a relay peer that also has HTTP connectivity to the backend
+  - [x] ✅ On receiving a valid event via relay, calls `POST /v1/events` idempotently
+  - [x] ✅ Implements `POST /v1/sync/pull` + `POST /v1/sync/ack` loop (cursor-based, page ≤ 50 events or 100 KB)
+  - [x] ✅ Transitions event state to `BRIDGE_ACKED` on its own receipt; waits for API `201` to signal `SYNCED`
+- [x] ✅ **Two simulated peers** for local development/demo: Phone A (origin), Phone B (relay hop), Bridge (bridge node)
+- [x] ✅ Validate: two duplicate relays from same event_id → only one canonical event at API
 
 ### Phase 3 (Hour 5–7) — Robustness
-- [ ] `PEER_ACKED` state is only reached on `ACCEPTED` or `DUPLICATE` ACK — verify with Member 2
-- [ ] Implement priority scheduling: `CRITICAL` events get forwarding priority over `NORMAL`
-- [ ] Per-peer and per-origin token-bucket quotas (backpressure — see [03_ARCHITECTURE_DESIGN.md §Backpressure](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L97-L100))
-- [ ] Emit structured telemetry: relay receipt, duplicate suppression, TTL expiry, rejection — no plaintext sensitive data
+- [x] ✅ `PEER_ACKED` state is only reached on `ACCEPTED` or `DUPLICATE` ACK — verify with Member 2
+- [x] ✅ Implement priority scheduling: `CRITICAL` events get forwarding priority over `NORMAL`
+- [x] ✅ Per-peer and per-origin token-bucket quotas (backpressure — see [03_ARCHITECTURE_DESIGN.md §Backpressure](file:///C:/Users/saroj/Desktop/ResQMesh/docs/03_ARCHITECTURE_DESIGN.md#L97-L100))
+- [x] ✅ Emit structured telemetry: relay receipt, duplicate suppression, TTL expiry, rejection — no plaintext sensitive data
 
 ### Phase 5 (Hour 9–10:30) — Resilience Tests
-- [ ] Run: duplicate relay test (two copies → one canonical), TTL expiry test (expired event not forwarded)
-- [ ] Run: `hop_count = 3` boundary test (not forwarded on 4th hop)
-- [ ] Run: malformed frame / oversized frame rejection
-- [ ] Demo scale proof: 50 duplicate Region A copies while Region B SOS created → Region A = 1 canonical, Region B completes
+- [x] ✅ Run: duplicate relay test (two copies → one canonical), TTL expiry test (expired event not forwarded)
+- [x] ✅ Run: `hop_count = 3` boundary test (not forwarded on 4th hop)
+- [x] ✅ Run: malformed frame / oversized frame rejection
+- [x] ✅ Demo scale proof: 50 duplicate Region A copies while Region B SOS created → Region A = 1 canonical, Region B completes
 
 **Branch prefix:** `mesh/`
 
