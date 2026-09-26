@@ -8,12 +8,12 @@
   "priority": "CRITICAL",
   "origin": {
     "kind": "CITIZEN",
-    "key_id": "demo:a1b2c3d4e5f6a7b8",
-    "public_key_b64url": "PLACEHOLDER_TEST_PUBLIC_KEY_BASE64URL"
+    "key_id": "demo:83c25ca7ee6501c0",
+    "public_key_b64url": "XqplOZZrvGQn8xeuJIzgG7PlgG1a77Nb8h4_68pNmFU"
   },
   "location_geohash": "tdr1q0",
   "payload": {
     "need": "MEDICAL"
   },
-  "signature_b64url": "PLACEHOLDER_TEST_SIGNATURE_BASE64URL"
+  "signature_b64url": "Ct3DCy0S3Mzgcbtxqijc7K1ojmfYKS8vb_sYZAocQZj_R9psj1JCx2cLtXgy3pQrmYP1ZJZ_Np3iT_eIYMJ1Cw"
 }
