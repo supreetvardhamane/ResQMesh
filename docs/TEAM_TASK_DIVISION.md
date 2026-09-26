@@ -270,21 +270,21 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 > **Primary docs:** [09_DEMO_SCRIPT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/09_DEMO_SCRIPT.md) · [07_EVALUATION_PLAN.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/07_EVALUATION_PLAN.md) · [10_JUDGE_QA.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/10_JUDGE_QA.md) · [16_BUILD_CONTRACT.md §Required fixtures](file:///C:/Users/saroj/Desktop/ResQMesh/docs/16_BUILD_CONTRACT.md#L192)
 
 ### Phase 0 (Hour 0–1) — Demo Plan
-- [ ] Read [09_DEMO_SCRIPT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/09_DEMO_SCRIPT.md) and [10_JUDGE_QA.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/10_JUDGE_QA.md) end to end
-- [ ] Define the exact 5-minute demo journey and share with all members
-- [ ] Identify which demo moment provides evidence for each judging criterion: Impact, Feasibility, Innovation, UX
+- [x] ✅ Read [09_DEMO_SCRIPT.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/09_DEMO_SCRIPT.md) and [10_JUDGE_QA.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/10_JUDGE_QA.md) end to end
+- [x] ✅ Define the exact 5-minute demo journey and share with all members *(see `packages/fixtures/ACCEPTANCE_CHECKLIST.md §Demo Journey`)*
+- [x] ✅ Identify which demo moment provides evidence for each judging criterion: Impact, Feasibility, Innovation, UX
 
 ### Phase 1 (Hour 1–3) — Fixture Creation
-- [ ] `packages/fixtures/sos.valid.json` — generated with test Ed25519 key, verifiable by web/API tests
-- [ ] `packages/fixtures/sos.bad-signature.json` — mutated signed field (coordinate with Member 5)
-- [ ] `packages/fixtures/incident.demo.json`:
-  - `incident_id = demo-flood-2026`; geohash `tdr1q0`
-  - One medical SOS (CRITICAL priority)
-  - One ambulance resource (AVAILABLE, `available_units > 0`)
-  - One hospital bed resource (AVAILABLE)
-  - Two conflicting road reports (same subject, different conditions, different `origin.key_id` values)
-- [ ] **Reset/seed script**: restores DB + IndexedDB to deterministic state in < 30 seconds
-- [ ] Verify CI validates fixtures through Pydantic + TypeScript type checks
+- [x] ✅ `packages/fixtures/sos.valid.json` — generated with real Ed25519 test key (`demo:83c25ca7ee6501c0`), verified by `validate_fixtures.py` (30/30 checks pass)
+- [x] ✅ `packages/fixtures/sos.bad-signature.json` — priority mutated from CRITICAL→NORMAL after signing; verifier returns SIGNATURE_INVALID *(coordinate with Member 5)*
+- [x] ✅ `packages/fixtures/incident.demo.json`:
+  - `incident_id = demo-flood-2026`; geohash `tdr1q0` ✅
+  - One medical SOS (CRITICAL priority) — real Ed25519 signature ✅
+  - One ambulance resource (AVAILABLE, 2 units) ✅
+  - One hospital bed resource (AVAILABLE, 5 units) ✅
+  - Two conflicting road reports (same subject `road-main-bridge`, BLOCKED vs OPEN, different `origin.key_id` values → CONFLICTING trust state) ✅
+- [x] ✅ **Reset/seed script** (`packages/fixtures/seed_reset.py`): restores DB + IndexedDB to deterministic state; supports `--dry-run`; tested ✅
+- [ ] ❌ Verify CI validates fixtures through Pydantic + TypeScript type checks *(CI pipeline not yet set up — pending Member 4)*
 
 ### Phase 2–3 (Hour 3–7) — Acceptance Checklist
 - [ ] Maintain running checklist (update as each lane delivers):

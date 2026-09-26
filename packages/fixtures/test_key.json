@@ -1,0 +1,7 @@
+{
+  "_note": "TEST KEY ONLY — forbidden in any deployed environment",
+  "key_id": "demo:83c25ca7ee6501c0",
+  "public_key_b64url": "XqplOZZrvGQn8xeuJIzgG7PlgG1a77Nb8h4_68pNmFU",
+  "algorithm": "Ed25519",
+  "usage": "fixture-verification"
+}
