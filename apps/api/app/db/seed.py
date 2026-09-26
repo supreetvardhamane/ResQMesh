@@ -50,55 +50,53 @@ async def seed() -> None:
         fixture = json.load(f)
 
     async with session_factory() as session:
-        # Clear existing demo data
-        await session.execute(text("DELETE FROM assignments WHERE need_event_id IN (SELECT event_id FROM events WHERE incident_id = 'demo-flood-2026')"))
-        await session.execute(text("DELETE FROM resources WHERE incident_id = 'demo-flood-2026'"))
-        await session.execute(text("DELETE FROM events WHERE incident_id = 'demo-flood-2026'"))
-        await session.commit()
+        async with session.begin():
+            # Clear existing demo data
+            await session.execute(text("DELETE FROM assignments WHERE need_event_id IN (SELECT event_id FROM events WHERE incident_id = 'demo-flood-2026')"))
+            await session.execute(text("DELETE FROM resources WHERE incident_id = 'demo-flood-2026'"))
+            await session.execute(text("DELETE FROM events WHERE incident_id = 'demo-flood-2026'"))
 
-        # Seed events (SOS + road reports)
-        for event_data in fixture.get("events", []) + fixture.get("road_reports", []):
-            created_at = datetime.fromisoformat(
-                event_data["created_at"].replace("Z", "+00:00")
-            )
-            event = EventModel(
-                event_id=uuid.UUID(event_data["event_id"]),
-                schema_version=event_data["schema_version"],
-                type=event_data["type"],
-                incident_id=event_data["incident_id"],
-                region_geohash=event_data["location_geohash"],
-                created_at=created_at,
-                ttl_seconds=event_data["ttl_seconds"],
-                priority=event_data["priority"],
-                origin_kind=event_data["origin"]["kind"],
-                origin_key_id=event_data["origin"]["key_id"],
-                envelope=event_data,
-                signature_b64url=event_data["signature_b64url"],
-                received_at=datetime.now(timezone.utc),
-            )
-            session.add(event)
+            # Seed events (SOS + road reports)
+            for event_data in fixture.get("events", []) + fixture.get("road_reports", []):
+                created_at = datetime.fromisoformat(
+                    event_data["created_at"].replace("Z", "+00:00")
+                )
+                event = EventModel(
+                    event_id=uuid.UUID(event_data["event_id"]),
+                    schema_version=event_data["schema_version"],
+                    type=event_data["type"],
+                    incident_id=event_data["incident_id"],
+                    region_geohash=event_data["location_geohash"],
+                    created_at=created_at,
+                    ttl_seconds=event_data["ttl_seconds"],
+                    priority=event_data["priority"],
+                    origin_kind=event_data["origin"]["kind"],
+                    origin_key_id=event_data["origin"]["key_id"],
+                    envelope=event_data,
+                    signature_b64url=event_data["signature_b64url"],
+                    received_at=datetime.now(timezone.utc),
+                )
+                session.add(event)
 
-        # Seed resources
-        for res_data in fixture.get("resources", []):
-            observed_at = datetime.fromisoformat(
-                res_data["observed_at"].replace("Z", "+00:00")
-            )
-            resource = ResourceModel(
-                resource_id=uuid.UUID(res_data["resource_id"]) if "-" in res_data["resource_id"] else uuid.uuid5(uuid.NAMESPACE_DNS, res_data["resource_id"]),
-                incident_id=res_data["incident_id"],
-                capability=res_data["capability"],
-                status=res_data["status"],
-                region_geohash=res_data["region_geohash"],
-                available_units=res_data["available_units"],
-                observed_at=observed_at,
-                updated_at=datetime.now(timezone.utc),
-            )
-            session.add(resource)
-
-        await session.commit()
+            # Seed resources
+            for res_data in fixture.get("resources", []):
+                observed_at = datetime.fromisoformat(
+                    res_data["observed_at"].replace("Z", "+00:00")
+                )
+                resource = ResourceModel(
+                    resource_id=uuid.UUID(res_data["resource_id"]) if (len(res_data["resource_id"]) == 36 and res_data["resource_id"].count("-") == 4) else uuid.uuid5(uuid.NAMESPACE_DNS, res_data["resource_id"]),
+                    incident_id=res_data["incident_id"],
+                    capability=res_data["capability"],
+                    status=res_data["status"],
+                    region_geohash=res_data["region_geohash"],
+                    available_units=res_data["available_units"],
+                    observed_at=observed_at,
+                    updated_at=datetime.now(timezone.utc),
+                )
+                session.add(resource)
 
     await engine.dispose()
-    print("✅ Demo incident seeded: demo-flood-2026")
+    print("OK Demo incident seeded: demo-flood-2026")
     print(f"   Events: {len(fixture.get('events', [])) + len(fixture.get('road_reports', []))}")
     print(f"   Resources: {len(fixture.get('resources', []))}")
 

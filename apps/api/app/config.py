@@ -4,19 +4,33 @@ ResQMesh — Typed Configuration Validator
 Validates environment configuration at startup and fails safely.
 Per: docs/02_MASTER_SPEC.md §Configuration policy
 Per: docs/16_BUILD_CONTRACT.md §Fixed stack and layout
-
-Rules:
-  - May set: API origin, feature flags, map tile endpoint, public key set,
-    queue limits, telemetry endpoint, database URL.
-  - Must NEVER contain: private keys, service credentials, unrestricted
-    database URLs, or raw production fixture data.
-  - Fails safely at startup if required config is missing or invalid.
 """
 
 from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+
+def _load_dotenv() -> None:
+    """Load .env from repo root if present (no external dependency needed)."""
+    env_path = Path(__file__).resolve().parents[3] / ".env"
+    if not env_path.exists():
+        return
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+_load_dotenv()
 
 
 @dataclass(frozen=True)

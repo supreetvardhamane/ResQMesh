@@ -3,18 +3,15 @@ ResQMesh API — FastAPI Application Entry Point
 
 Provides the health endpoint and mounts all P0 route modules.
 See: docs/16_BUILD_CONTRACT.md §P0 HTTP endpoints
-
-Endpoints:
-  GET   /healthz
-  POST  /v1/events
-  GET   /v1/incidents/{incident_id}/events
-  POST  /v1/resources
-  GET   /v1/resources/matches
-  POST  /v1/assignments
-  PATCH /v1/assignments/{assignment_id}
-  POST  /v1/sync/pull
-  POST  /v1/sync/ack
 """
+
+import asyncio
+import sys
+
+# psycopg v3 async is incompatible with Windows ProactorEventLoop.
+# Must be set before any async engine is created.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from contextlib import asynccontextmanager
 
