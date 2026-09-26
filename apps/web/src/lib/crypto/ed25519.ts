@@ -19,7 +19,7 @@
  * Citizen events are labelled UNVERIFIED — integrity is proven, identity is not.
  */
 
-import { SCHEMA_VERSION } from "../../../../packages/contracts/types";
+import { SCHEMA_VERSION } from "@contracts";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 

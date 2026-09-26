@@ -21,7 +21,7 @@ import {
   SYNC_PAGE_MAX_EVENTS,
   SYNC_PAGE_MAX_BYTES,
   type EventEnvelope,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 
 import { RelayAdapter, type OnDeliveryStateChange } from "./adapter";
 import { relayTelemetry } from "./telemetry";

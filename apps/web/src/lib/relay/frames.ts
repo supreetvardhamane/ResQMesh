@@ -20,7 +20,7 @@ import {
   type PingFrame,
   type PongFrame,
   type EventEnvelope,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 
 // ─── UUID v4 Generator ───────────────────────────────────────────────────────
 

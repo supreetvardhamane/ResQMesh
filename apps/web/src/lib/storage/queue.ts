@@ -21,7 +21,7 @@ import {
   DeliveryState,
   EventEnvelope,
   MAX_QUEUE_EVENTS,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 import {
   logQueueAccept,
   logQueueFull,

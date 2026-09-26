@@ -26,7 +26,7 @@ import {
   DEMO_INCIDENT_ID,
   DEFAULT_TTL_SECONDS,
   EventEnvelope,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 
 // ─── Persistence test ────────────────────────────────────────────────────────
 

@@ -27,7 +27,7 @@ import {
   Priority,
   FrameType,
   PROTOCOL_VERSION,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 
 import { DedupeCache } from "./dedupe";
 

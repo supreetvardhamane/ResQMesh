@@ -21,4 +21,4 @@ export {
   AckOutcome,
   Priority,
   DeliveryState,
-} from "../../../../packages/contracts/types";
+} from "@contracts";

@@ -29,7 +29,7 @@ import {
   type EventRequestFrame,
   type EventAckFrame,
   type PingFrame,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 
 import { DedupeCache } from "./dedupe";
 import { QuotaManager } from "./quota";

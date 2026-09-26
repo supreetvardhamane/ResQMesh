@@ -13,7 +13,7 @@
  * - Captures: queue_age, relay_receipt, duplicate_suppression, delivery state transitions
  */
 
-import { DeliveryState, Priority } from "../../../../packages/contracts/types";
+import { DeliveryState, Priority } from "@contracts";
 
 // ─── Software version ─────────────────────────────────────────────────────────
 const SOFTWARE_VERSION = "0.1.0";

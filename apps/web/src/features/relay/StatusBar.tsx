@@ -1,161 +1,121 @@
 /**
- * ResQMesh — Network/Status Bar (Member 2 / apps/web/src/features/relay/StatusBar.tsx)
- *
- * Per docs/TEAM_TASK_DIVISION.md §Member 2 Phase 1 — Network/Status Bar:
- * - Show OFFLINE, RELAYING, BRIDGE_AVAILABLE, SYNCED, FAILED — plain text, not color-only
- * - Status must distinguish: local-saved vs peer-acked vs bridge-confirmed vs server-synced
- *
- * Accessible: role="status", aria-live="polite", text labels beyond color.
+ * ResQMesh — Network Status Bar
+ * Per FRONTEND.md: network-aware UI, status not color-only, fast and subtle.
  */
 
 import React from "react";
-import { DeliveryState } from "../../../../packages/contracts/types";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+import { DeliveryState } from "@contracts";
 
 export type NetworkStatus =
-  | DeliveryState
   | "OFFLINE"
   | "RELAYING"
-  | "BRIDGE_AVAILABLE";
+  | "BRIDGE_AVAILABLE"
+  | DeliveryState.PEER_ACKED
+  | DeliveryState.BRIDGE_ACKED
+  | DeliveryState.SYNCED
+  | DeliveryState.EXPIRED
+  | DeliveryState.REJECTED
+  | DeliveryState.RETRY_PENDING
+  | DeliveryState.SAVED_LOCAL
+  | DeliveryState.QUEUED_FOR_RELAY;
 
-interface StatusBarProps {
-  /** Current network/delivery status */
-  status: NetworkStatus;
-  /** Number of events currently queued (optional display) */
-  eventCount?: number;
+interface StatusConfig {
+  dot: string;   // CSS color for the dot
+  bg: string;    // Background color
+  border: string;
+  text: string;  // Text color
+  label: string;
+  detail: string;
 }
 
-// ─── Status definitions ───────────────────────────────────────────────────────
-
-interface StatusDef {
-  icon: string;    // Unicode symbol — NOT color-only
-  label: string;   // Plain text label
-  detail: string;  // Detailed description
-}
-
-const STATUS_MAP: Record<NetworkStatus, StatusDef> = {
-  // Custom network-level statuses
-  OFFLINE: {
-    icon: "⊗",
-    label: "Offline",
-    detail: "Events saved locally — no peer connection",
-  },
-  RELAYING: {
-    icon: "⟳",
-    label: "Relaying",
-    detail: "Sending to nearby peer via prototype transport",
-  },
-  BRIDGE_AVAILABLE: {
-    icon: "⇡",
-    label: "Bridge available",
-    detail: "Rescue vehicle bridge — syncing to server",
-  },
-  // Delivery states
-  [DeliveryState.DRAFT]: {
-    icon: "✎",
-    label: "Draft",
-    detail: "Not yet saved locally",
-  },
-  [DeliveryState.SAVED_LOCAL]: {
-    icon: "💾",
-    label: "Saved locally",
-    detail: "In local queue — awaiting relay peer",
-  },
-  [DeliveryState.QUEUED_FOR_RELAY]: {
-    icon: "📡",
-    label: "Queued for relay",
-    detail: "Waiting for nearby peer connection",
-  },
-  [DeliveryState.PEER_ACKED]: {
-    icon: "↔",
-    label: "Peer acknowledged",
-    detail: "Peer accepted — not yet at server",
-  },
-  [DeliveryState.BRIDGE_ACKED]: {
-    icon: "⇡",
-    label: "Bridge acknowledged",
-    detail: "Bridge node received — syncing to server",
-  },
-  [DeliveryState.SYNCED]: {
-    icon: "✓",
-    label: "Synced",
-    detail: "Server confirmed receipt",
-  },
-  [DeliveryState.RETRY_PENDING]: {
-    icon: "↺",
-    label: "Retry pending",
-    detail: "Will retry relay automatically",
-  },
-  [DeliveryState.EXPIRED]: {
-    icon: "⚠",
-    label: "Expired",
-    detail: "Event TTL elapsed — not relayed",
-  },
-  [DeliveryState.REJECTED]: {
-    icon: "✕",
-    label: "Rejected",
-    detail: "Validation failed — check event",
-  },
+const STATUS_MAP: Record<string, StatusConfig> = {
+  OFFLINE:                   { dot: "#94A3B8", bg: "#F8FAFC",           border: "#E2E8F0",  text: "#475569", label: "Offline",               detail: "Events saved locally. Will relay when connection available." },
+  RELAYING:                  { dot: "#2563EB", bg: "var(--c-blue-light)",  border: "var(--c-blue-border)",  text: "#1E40AF", label: "Relaying",              detail: "Sending event through peer-to-peer network." },
+  BRIDGE_AVAILABLE:          { dot: "#16A34A", bg: "var(--c-green-light)", border: "var(--c-green-border)", text: "#15803D", label: "Bridge available",       detail: "Internet bridge is reachable." },
+  [DeliveryState.SAVED_LOCAL]:       { dot: "#D97706", bg: "var(--c-amber-light)", border: "var(--c-amber-border)", text: "#92400E", label: "Saved locally",          detail: "Queued for relay when network is available." },
+  [DeliveryState.QUEUED_FOR_RELAY]:  { dot: "#2563EB", bg: "var(--c-blue-light)",  border: "var(--c-blue-border)",  text: "#1E40AF", label: "Queued for relay",      detail: "Waiting to send to peer." },
+  [DeliveryState.PEER_ACKED]:        { dot: "#16A34A", bg: "var(--c-green-light)", border: "var(--c-green-border)", text: "#15803D", label: "Peer acknowledged",      detail: "A nearby peer has received the event." },
+  [DeliveryState.BRIDGE_ACKED]:      { dot: "#16A34A", bg: "var(--c-green-light)", border: "var(--c-green-border)", text: "#15803D", label: "Bridge acknowledged",    detail: "Bridge relay has confirmed receipt." },
+  [DeliveryState.SYNCED]:            { dot: "#16A34A", bg: "var(--c-green-light)", border: "var(--c-green-border)", text: "#15803D", label: "Synced",                 detail: "Server confirmed. Event is in the system." },
+  [DeliveryState.RETRY_PENDING]:     { dot: "#D97706", bg: "var(--c-amber-light)", border: "var(--c-amber-border)", text: "#92400E", label: "Retry pending",          detail: "Will retry with backoff." },
+  [DeliveryState.EXPIRED]:           { dot: "#DC2626", bg: "var(--c-red-light)",   border: "var(--c-red-border)",   text: "#991B1B", label: "Expired",               detail: "Event TTL elapsed. Not forwarded." },
+  [DeliveryState.REJECTED]:          { dot: "#DC2626", bg: "var(--c-red-light)",   border: "var(--c-red-border)",   text: "#991B1B", label: "Rejected",              detail: "Event failed validation." },
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+interface StatusBarProps {
+  status: NetworkStatus;
+}
 
-export function StatusBar({ status, eventCount }: StatusBarProps): React.ReactElement {
-  const def = STATUS_MAP[status] ?? {
-    icon: "?",
-    label: "Unknown",
-    detail: "Status unknown",
-  };
-
-  // Accessible color hints — text is always the primary indicator
-  const barStyle: React.CSSProperties = {
-    minHeight: "44px",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px 16px",
-    borderBottom: "2px solid #ddd",
-    background: "#f9f9f9",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: "14px",
-  };
+export function StatusBar({ status }: StatusBarProps): React.ReactElement {
+  const cfg = STATUS_MAP[status as string] ?? STATUS_MAP["OFFLINE"];
+  const isAnimated = status === "RELAYING" || status === DeliveryState.QUEUED_FOR_RELAY;
 
   return (
     <div
       role="status"
       aria-live="polite"
-      aria-label={`Network status: ${def.label}. ${def.detail}`}
-      style={barStyle}
+      aria-atomic="true"
+      aria-label={`Network status: ${cfg.label}. ${cfg.detail}`}
+      style={{
+        height: "var(--statusbar-height)",
+        background: cfg.bg,
+        borderBottom: `1px solid ${cfg.border}`,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 var(--sp-5)",
+        gap: "var(--sp-3)",
+        flexShrink: 0,
+      }}
     >
-      {/* Icon — supplemental, never sole indicator */}
-      <span aria-hidden="true" style={{ fontSize: "18px", flexShrink: 0 }}>
-        {def.icon}
+      {/* Animated dot */}
+      <span
+        aria-hidden="true"
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: cfg.dot,
+          flexShrink: 0,
+          animation: isAnimated ? "pulse-dot 1.4s ease-in-out infinite" : "none",
+        }}
+      />
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.5; transform: scale(0.75); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes pulse-dot { from, to { opacity: 1; } }
+        }
+      `}</style>
+
+      {/* Label */}
+      <span style={{
+        fontSize: "var(--text-xs)",
+        fontWeight: "var(--weight-semibold)",
+        color: cfg.text,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+      }}>
+        {cfg.label}
       </span>
 
-      {/* Text label — primary indicator */}
-      <span>
-        <strong>{def.label}</strong>
-        {" — "}
-        <span style={{ color: "#444" }}>{def.detail}</span>
+      {/* Detail — hidden on small screens, useful for context */}
+      <span style={{
+        fontSize: "var(--text-xs)",
+        color: cfg.text,
+        opacity: 0.7,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        display: "none",
+      }} className="status-detail">
+        — {cfg.detail}
       </span>
 
-      {/* Queue count if provided */}
-      {typeof eventCount === "number" && eventCount > 0 && (
-        <span
-          style={{
-            marginLeft: "auto",
-            background: "#e0e0e0",
-            borderRadius: "12px",
-            padding: "2px 10px",
-            fontSize: "13px",
-            flexShrink: 0,
-          }}
-          aria-label={`${eventCount} event${eventCount !== 1 ? "s" : ""} queued`}
-        >
-          {eventCount} queued
-        </span>
-      )}
+      <style>{`
+        @media (min-width: 480px) { .status-detail { display: block !important; } }
+      `}</style>
     </div>
   );
 }

@@ -34,7 +34,7 @@ import {
   PROTOCOL_VERSION,
   MAX_FRAME_BYTES,
   MAX_ACTIVE_PEERS,
-} from "../../../../packages/contracts/types";
+} from "@contracts";
 import {
   logRelayOfferSent,
   logRelayAckReceived,
