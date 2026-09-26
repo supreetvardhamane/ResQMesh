@@ -275,7 +275,7 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 - [x] ✅ Identify which demo moment provides evidence for each judging criterion: Impact, Feasibility, Innovation, UX
 
 ### Phase 1 (Hour 1–3) — Fixture Creation
-- [x] ✅ `packages/fixtures/sos.valid.json` — generated with real Ed25519 test key (`demo:83c25ca7ee6501c0`), verified by `validate_fixtures.py` (30/30 checks pass)
+- [x] ✅ `packages/fixtures/sos.valid.json` — generated with real Ed25519 test key (`demo:83c25ca7ee6501c0`), verified by `validate_fixtures.py` (30/30 c hecks pass)
 - [x] ✅ `packages/fixtures/sos.bad-signature.json` — priority mutated from CRITICAL→NORMAL after signing; verifier returns SIGNATURE_INVALID *(coordinate with Member 5)*
 - [x] ✅ `packages/fixtures/incident.demo.json`:
   - `incident_id = demo-flood-2026`; geohash `tdr1q0` ✅
@@ -287,37 +287,37 @@ Hour 11:30–12 → Demo lock — Member 1 freezes scope, Member 6 runs script �
 - [ ] ❌ Verify CI validates fixtures through Pydantic + TypeScript type checks *(CI pipeline not yet set up — pending Member 4)*
 
 ### Phase 2–3 (Hour 3–7) — Acceptance Checklist
-- [ ] Maintain running checklist (update as each lane delivers):
-  - [ ] SOS persists after refresh (FR-01 durability)
-  - [ ] Duplicate relay → one canonical event (FR-07 idempotency)
-  - [ ] Bad signature rejected (FR-02 safety)
-  - [ ] Core journey works keyboard-only (accessibility)
-  - [ ] No full-feed download triggered (performance)
-  - [ ] Failure path creates structured log (observability)
-- [ ] Accessibility walkthrough:
-  - [ ] Tab through SOS form → submit → status update — all keyboard
-  - [ ] 360 px viewport: SOS button visible without scroll
-  - [ ] Status text not color-only; visible focus rings
-  - [ ] Screen reader labels on all interactive controls
-  - [ ] `prefers-reduced-motion` tested
+- [ ] ❌ Maintain running checklist (update as each lane delivers):
+  - [ ] ❌ SOS persists after refresh (FR-01 durability) *(blocked — waiting Member 2)*
+  - [ ] ❌ Duplicate relay → one canonical event (FR-07 idempotency) *(blocked — waiting Members 3 + 4)*
+  - [ ] ❌ Bad signature rejected (FR-02 safety) *(fixture ready ✅; API integration blocked — waiting Members 4 + 5)*
+  - [ ] ❌ Core journey works keyboard-only (accessibility) *(blocked — waiting Member 2)*
+  - [ ] ❌ No full-feed download triggered (performance) *(blocked — waiting Members 2 + 4)*
+  - [ ] ❌ Failure path creates structured log (observability) *(blocked — waiting Member 5)*
+- [ ] ❌ Accessibility walkthrough:
+  - [ ] ❌ Tab through SOS form → submit → status update — all keyboard *(blocked — waiting Member 2)*
+  - [ ] ❌ 360 px viewport: SOS button visible without scroll *(blocked — waiting Member 2)*
+  - [ ] ❌ Status text not color-only; visible focus rings *(blocked — waiting Member 2)*
+  - [ ] ❌ Screen reader labels on all interactive controls *(blocked — waiting Member 2)*
+  - [ ] ❌ `prefers-reduced-motion` tested *(blocked — waiting Member 2)*
 
 ### Phase 4 (Hour 7–9) — Evidence Capture
-- [ ] Screenshots: SOS form, each delivery state, confidence decay at 0m/10m/20m, resource match + rationale, provenance panel, conflict trust state, assignment acceptance
-- [ ] Network samples: valid SOS `201`, duplicate `200`, expired TTL `410`, bad signature `422`
-- [ ] Log capture: queue age, relay receipt, duplicate suppression
+- [ ] ❌ Screenshots: SOS form, each delivery state, confidence decay at 0m/10m/20m, resource match + rationale, provenance panel, conflict trust state, assignment acceptance *(blocked — waiting for full integration)*
+- [ ] ❌ Network samples: valid SOS `201`, duplicate `200`, expired TTL `410`, bad signature `422` *(blocked — waiting Member 4)*
+- [ ] ❌ Log capture: queue age, relay receipt, duplicate suppression *(blocked — waiting Member 5)*
 
 ### Phase 6 (Hour 10:30–11:30) — Verification Complete
-- [ ] Run full integration suite from [07_EVALUATION_PLAN.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/07_EVALUATION_PLAN.md)
-- [ ] Rehearse 5-minute demo script once with full team
-- [ ] Update [15_REQUIREMENTS_TRACEABILITY.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/15_REQUIREMENTS_TRACEABILITY.md) with `IMPLEMENTED` / `VERIFIED` / `DEFERRED` for FR-01 through FR-08
-- [ ] Confirm backup recording ready as fallback
-- [ ] Two consecutive successful demo walkthroughs on final device
+- [ ] ❌ Run full integration suite from [07_EVALUATION_PLAN.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/07_EVALUATION_PLAN.md) *(blocked — waiting for all lanes to integrate)*
+- [ ] ❌ Rehearse 5-minute demo script once with full team *(blocked — waiting for full integration)*
+- [ ] ❌ Update [15_REQUIREMENTS_TRACEABILITY.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/15_REQUIREMENTS_TRACEABILITY.md) with `IMPLEMENTED` / `VERIFIED` / `DEFERRED` for FR-01 through FR-08 *(blocked — waiting for integration)*
+- [ ] ❌ Confirm backup recording ready as fallback *(blocked — product not yet integrated)*
+- [ ] ❌ Two consecutive successful demo walkthroughs on final device *(blocked — product not yet integrated)*
 
 ### Phase 7 (Hour 11:30–12) — Demo Lock
-- [ ] Reset fixtures between the two final runs
-- [ ] Prepare factual judge answers from [10_JUDGE_QA.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/10_JUDGE_QA.md)
-- [ ] Capture evidence register: build version, test results, screenshots, known limits
-- [ ] Confirm backup recording playback works
+- [ ] ❌ Reset fixtures between the two final runs *(script ready ✅ `seed_reset.py`; to be run at demo time)*
+- [ ] ❌ Prepare factual judge answers from [10_JUDGE_QA.md](file:///C:/Users/saroj/Desktop/ResQMesh/docs/10_JUDGE_QA.md) *(read ✅; rehearsal pending)*
+- [ ] ❌ Capture evidence register: build version, test results, screenshots, known limits *(template ready ✅ `EVIDENCE_REGISTER.md`; to be filled at demo lock)*
+- [ ] ❌ Confirm backup recording playback works *(blocked — recording not yet made)*
 
 **Branch prefix:** `qa/`
 
