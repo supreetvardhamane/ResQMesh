@@ -1,260 +1,677 @@
-<div align="center">
-
 # 🚨 ResQMesh
 
 ### Disconnected-First Disaster Coordination Infrastructure
 
-*When cell towers go dark and the internet fails, ResQMesh keeps survivors connected.*
+> **When cell towers go dark and the internet fails, ResQMesh keeps survivors connected.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
-[![React 18](https://img.shields.io/badge/React-18.3-61DAFB.svg)](https://react.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688.svg)](https://fastapi.tiangolo.com)
+ResQMesh is a **disconnected-first disaster coordination platform** that enables smartphones, volunteers, and emergency vehicles to exchange critical information **without requiring continuous internet connectivity**.
 
-</div>
+It uses an **offline store-and-forward mesh architecture** to propagate SOS requests, road-condition reports, and resource availability until the data reaches a device with network connectivity.
 
 ---
 
-## The Problem
+## 🌊 The Problem
 
-When severe floods, cyclones, or earthquakes strike, cell towers lose power within 2 hours and central emergency dashboards go dark — yet millions of survivors hold fully charged smartphones with functional Wi-Fi chips, rendered useless because today's apps demand a live cloud connection.
+During severe **floods, cyclones, earthquakes, and other disasters**, communication infrastructure can become unavailable due to:
 
-**ResQMesh bridges this last-mile digital void.**
+- Cell tower failures
+- Power outages
+- Network congestion
+- Damaged communication infrastructure
+- Loss of internet connectivity
 
-## What It Does
+Yet survivors often still have **fully charged smartphones with functioning Wi-Fi hardware**.
 
-ResQMesh is a disconnected-first coordination layer that turns civilian devices and emergency vehicles into an **offline store-and-forward mesh network**:
+Traditional emergency applications fail in these situations because they depend on a centralized cloud connection.
+
+### ResQMesh bridges this last-mile communication gap.
+
+Instead of requiring every device to reach the cloud directly, ResQMesh allows devices to **store, carry, and forward critical information hop-by-hop** until it reaches an emergency responder or network-connected bridge.
+
+---
+
+## 🚀 What ResQMesh Does
 
 | Capability | How It Works |
-|-----------|-------------|
-| **Offline SOS** | One-tap SOS signed with Ed25519 locally, persisted in IndexedDB — no internet required |
-| **P2P Relay** | Store-and-forward gossip (max 3 hops, 30-min TTL) propagates events to rescue bridges |
-| **Resource Discovery** | Community assets (boats, generators, hospital beds) visible without cloud lookup |
-| **Trusted Information** | Cryptographic signatures prevent rumour injection; confidence-decay scores flag stale reports |
-| **Responder Console** | Evidence-backed operational picture for field responders |
+|---|---|
+| 🆘 **Offline SOS** | One-tap SOS messages are signed locally with Ed25519 and persisted in IndexedDB. |
+| 📡 **P2P Relay** | Store-and-forward gossip propagates events between nearby devices. |
+| 🚤 **Resource Discovery** | Community resources such as boats, generators, shelters, and hospital capacity can be registered locally. |
+| 🔐 **Trusted Information** | Cryptographic signatures prevent unauthorized event modification or injection. |
+| ⏳ **Confidence Decay** | Older reports lose confidence so responders can identify potentially stale information. |
+| 🚑 **Responder Console** | Emergency personnel receive an evidence-backed operational view once data reaches a connected bridge. |
+| 🔄 **Bridge Synchronization** | Rescue vehicles or connected devices synchronize locally collected events with the cloud when connectivity becomes available. |
 
-### Architecture at a Glance
+---
 
+# 🏗️ Architecture
+
+```text
+┌─────────────────────────────┐
+│     SURVIVOR DEVICE         │
+│                             │
+│  • Offline SOS              │
+│  • Ed25519 Signature        │
+│  • IndexedDB Storage        │
+└──────────────┬──────────────┘
+               │
+               │ Local P2P Transfer
+               ▼
+┌─────────────────────────────┐
+│      COMMUNITY DEVICE       │
+│                             │
+│  • Stores Event             │
+│  • Deduplicates             │
+│  • Forwards Event           │
+└──────────────┬──────────────┘
+               │
+               │ Hop-by-Hop Relay
+               ▼
+┌─────────────────────────────┐
+│      OFFLINE MESH           │
+│                             │
+│  Store-and-Forward Gossip   │
+│  Max 3 Hops                 │
+│  30-Minute TTL              │
+│  1024-Entry Dedup Cache     │
+│  ≤ 3 KB Frames              │
+└──────────────┬──────────────┘
+               │
+               │
+               ▼
+┌─────────────────────────────┐
+│    RESCUE VEHICLE / BRIDGE  │
+│                             │
+│  • Local Event Store        │
+│  • Sync Queue               │
+│  • Receipt Generation       │
+└──────────────┬──────────────┘
+               │
+               │ Network Available
+               ▼
+┌─────────────────────────────┐
+│     CLOUD COORDINATION      │
+│                             │
+│  FastAPI                    │
+│  PostgreSQL 16              │
+│  Signature Verification     │
+│  Resource Matching          │
+│  Assignment Projection      │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│      RESPONDER CONSOLE      │
+│                             │
+│  • SOS Events               │
+│  • Road Conditions          │
+│  • Resources                │
+│  • Rescue Assignments       │
+└─────────────────────────────┘
 ```
-[ Survivor (No Internet) ]           [ Community Volunteer ]
-        │                                      │
-  1-Tap Offline SOS                   Registers Capacity
-  Ed25519 Local Signature             IndexedDB Local Store
-  Stored in IndexedDB                          │
-        │                                      │
-        └──────────────┬───────────────────────┘
-                       │
-        ┌──────────────▼──────────────────────┐
-        │     OFFLINE LOCAL P2P RELAY         │
-        │  Store-and-Forward Bounded Gossip   │
-        │  Max 3 Hops · 30-min TTL            │
-        │  1024-entry Dedupe · ≤ 3 KB frames  │
-        └──────────────┬──────────────────────┘
-                       │ Moves hop-by-hop
-                       ▼
-              [ Rescue Vehicle / Bridge ]
-              Stores receipt locally
-                       │
-               Reaches network boundary
-                       ▼
-        ┌──────────────────────────────────────┐
-        │   CLOUD COORDINATION LAYER           │
-        │   FastAPI · PostgreSQL 16            │
-        │   Signature verification             │
-        │   Resource matching                  │
-        │   Assignment projection              │
-        └──────────────────────────────────────┘
+
+---
+
+# 🔄 How It Works
+
+### 1. Survivor creates an SOS
+
+The survivor presses the **SOS button** even when completely offline.
+
+The event is:
+
+1. Created locally
+2. Signed using an Ed25519 private key
+3. Stored in IndexedDB
+4. Added to the local relay queue
+
+No cloud connection is required.
+
+### 2. Nearby devices relay the event
+
+When another participating device comes within communication range, the event can be exchanged and stored locally.
+
+Each device can subsequently forward the event to another device.
+
+```text
+Survivor
+   ↓
+Device A
+   ↓
+Device B
+   ↓
+Device C
+   ↓
+Rescue Vehicle
+   ↓
+Internet
+   ↓
+Cloud
+```
+
+### 3. Bounded propagation
+
+To prevent uncontrolled network flooding, every event is constrained by:
+
+- **Maximum hops:** 3
+- **TTL:** 30 minutes
+- **Deduplication cache:** 1024 entries
+- **Maximum frame size:** ≤ 3 KB
+
+This keeps the mesh bounded and prevents network storms.
+
+### 4. Rescue vehicle acts as a bridge
+
+A rescue vehicle or connected responder device can act as a **network bridge**.
+
+Once connectivity becomes available, it synchronizes locally collected events with the backend.
+
+### 5. Responders receive the operational picture
+
+The cloud verifies incoming signatures and updates the responder console with:
+
+- SOS requests
+- Road-condition reports
+- Available resources
+- Rescue assignments
+- Event freshness/confidence
+
+---
+
+# 🔐 Security Model
+
+ResQMesh is designed around **cryptographically verifiable event envelopes**.
+
+### Ed25519 Signatures
+
+Every event is signed on-device using an Ed25519 private key.
+
+```text
+Event
+  │
+  ├── Payload
+  ├── Timestamp
+  ├── Event ID
+  ├── Device Public Key
+  └── Ed25519 Signature
+```
+
+The private key remains on the originating device.
+
+Only the public key and signed event envelope are transmitted.
+
+This allows the backend to verify:
+
+```text
+Signature
+    │
+    ▼
+Valid? ────── No ──────► Reject
+  │
+ Yes
+  │
+  ▼
+Accept Event
+```
+
+### Additional protections
+
+- **60 requests/minute** standard rate limit
+- **120 requests/minute** for `CRITICAL` SOS events
+- Payload-size enforcement
+- Event deduplication
+- TTL-based expiration
+- Privacy-minimized structured logging
+- No plaintext PII in application logs
+
+See [`SECURITY.md`](SECURITY.md) for the complete security model.
+
+---
+
+# 📡 Mesh Protocol
+
+ResQMesh uses a small bounded event protocol:
+
+| Frame | Purpose |
+|---|---|
+| `HELLO` | Discover and identify a nearby peer |
+| `EVENT_OFFER` | Advertise an event available for transfer |
+| `EVENT_REQUEST` | Request the event payload |
+| `EVENT_PUSH` | Transfer the event |
+| `EVENT_ACK` | Confirm successful reception |
+| `PING` | Check peer availability |
+| `PONG` | Respond to peer availability check |
+
+### Protocol constraints
+
+```text
+Maximum hops       → 3
+Event TTL           → 30 minutes
+Deduplication cache → 1024 entries
+Frame size          → ≤ 3 KB
+```
+
+These constraints intentionally trade unlimited propagation for **predictable, bounded network behavior**.
+
+---
+
+# 🧱 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React + TypeScript + Vite |
+| **Application Type** | Progressive Web App |
+| **Offline Storage** | IndexedDB + `idb` |
+| **Cryptography** | Web Crypto API / Ed25519 |
+| **Backend** | FastAPI |
+| **Validation** | Pydantic v2 |
+| **Database** | PostgreSQL 16 |
+| **ORM** | SQLAlchemy 2 |
+| **Backend Cryptography** | `cryptography` |
+| **Infrastructure** | Docker Compose |
+| **Language — Backend** | Python 3.12 |
+| **Language — Frontend** | TypeScript |
+
+### Versions
+
+```text
+React       18.3.1
+Vite        5.4.14
+Python      3.12+
+FastAPI     0.115.6
+Pydantic    2.10.3
+cryptography 43.0.3
+PostgreSQL  16
 ```
 
 ---
 
-## 📸 Screenshots
+# 📁 Project Structure
 
-> A live look at ResQMesh in action — every screen works fully offline.
-
-**Responder Command Console — Incident Queue, Live Map & Trust Panel**
-![Responder Console — Incident queue with CRITICAL/HIGH priority events on a live map, Trust & Provenance sidebar showing Ed25519 signature verification and 99% confidence score](docs/screenshots/1.jpg)
+```text
+ResQMesh/
+│
+├── apps/
+│   │
+│   ├── api/
+│   │   ├── app/
+│   │   │   ├── config.py
+│   │   │   ├── contracts.py
+│   │   │   │
+│   │   │   ├── db/
+│   │   │   │   ├── models
+│   │   │   │   └── engine
+│   │   │   │
+│   │   │   ├── middleware.py
+│   │   │   ├── observability.py
+│   │   │   ├── security.py
+│   │   │   │
+│   │   │   ├── routes/
+│   │   │   │   ├── events
+│   │   │   │   ├── resources
+│   │   │   │   ├── assignments
+│   │   │   │   └── sync
+│   │   │   │
+│   │   │   └── services/
+│   │   │       ├── events
+│   │   │       ├── resources
+│   │   │       ├── assignments
+│   │   │       └── sync
+│   │   │
+│   │   └── requirements.txt
+│   │
+│   └── web/
+│       └── src/
+│           ├── features/
+│           │   ├── sos/
+│           │   ├── relay/
+│           │   ├── responder/
+│           │   └── resources/
+│           │
+│           └── lib/
+│               ├── crypto/
+│               ├── relay/
+│               └── storage/
+│
+├── docs/
+│   ├── 01_PROBLEM_AND_SCOPE.md
+│   ├── 02_MASTER_SPEC.md
+│   ├── 03_ARCHITECTURE_DESIGN.md
+│   ├── 04_DATA_AND_PRIVACY.md
+│   ├── 05_API_CONTRACT.md
+│   ├── 11_DECISIONS.md
+│   └── 16_BUILD_CONTRACT.md
+│
+├── infra/
+│   └── compose.yaml
+│
+├── packages/
+│   ├── contracts/
+│   └── fixtures/
+│
+├── .env.example
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── PITCH_DECK_AND_JURY_DEFENSE.md
+└── seed_now.py
+```
 
 ---
 
-**Knowledge Graph + AI Operational Assistant**
-![Knowledge Graph view showing SOS-to-resource relationship graph, with the Relay Disaster Operational Assistant chatbot suggesting nearest shelters and hospital capacities](docs/screenshots/2.jpg)
+# 🔌 API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/healthz` | Health check |
+| `POST` | `/v1/events` | Submit signed SOS / road report |
+| `GET` | `/v1/events` | List events for an incident |
+| `POST` | `/v1/resources` | Register a community resource |
+| `GET` | `/v1/resources` | List available resources |
+| `POST` | `/v1/assignments` | Create rescue assignment |
+| `GET` | `/v1/assignments` | List assignments |
+| `POST` | `/v1/sync/pull` | Pull events since a cursor |
+| `POST` | `/v1/sync/ack` | Acknowledge a synced event batch |
+| `GET` | `/v1/reports` | Retrieve road-condition reports |
+
+Full API specification:
+
+[`docs/05_API_CONTRACT.md`](docs/05_API_CONTRACT.md)
 
 ---
 
-**Knowledge Graph — Shortest Route Calculation**
-![Knowledge Graph rendering the shortest evacuation route: Ullal Beach Road → Coastal connector → NH-66 north, 28.2 km simulated path](docs/screenshots/3.jpg)
+# ⚡ Quick Start
+
+## Prerequisites
+
+Make sure you have:
+
+- Python **3.12+**
+- Node.js **20+ LTS**
+- Docker **24+**
+- Git
 
 ---
 
-**Live Relay Setup — Multi-Device QR Pairing**
-![Live relay setup modal with QR codes for Victim Phone and Relay Device, enabling mesh relay across three devices on a shared Wi-Fi or hotspot — no internet required](docs/screenshots/4.jpg)
-
----
-
-## 🎬 Demo Video
-
-[![Watch the ResQMesh Demo](https://img.youtube.com/vi/kIQ8pR2qTfY/maxresdefault.jpg)](https://youtu.be/kIQ8pR2qTfY)
-
-> *Click the thumbnail to watch the full demo on YouTube.*
-
----
-
-## Tech Stack
-
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Frontend | React PWA + TypeScript + Vite | React 18.3.1 / Vite 5.4.14 |
-| Crypto | Web Crypto API (Ed25519) | Browser-native |
-| Local storage | IndexedDB (idb) | — |
-| API | FastAPI + Pydantic v2 | 0.115.6 / 2.10.3 |
-| Database | PostgreSQL 16 + SQLAlchemy 2 | — |
-| Signing | Ed25519 via `cryptography` | 43.0.3 |
-| Dev infra | Docker Compose | — |
-
----
-
-## Quick Start
-
-### Prerequisites
-- Python 3.12+, Node.js 20+ LTS, Docker 24+
-
-### 1 — Clone & Configure
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/supreetvardhamane/ResQMesh.git
 cd ResQMesh
-cp .env.example .env          # review defaults; they work as-is for local dev
 ```
 
-### 2 — Start PostgreSQL
+Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+Review the defaults if required. They are configured for local development.
+
+---
+
+## 2. Start PostgreSQL
 
 ```bash
 docker compose -f infra/compose.yaml up -d
 ```
 
-### 3 — Backend
+---
+
+## 3. Start the backend
 
 ```bash
 cd apps/api
+```
+
+Create a virtual environment:
+
+### Windows
+
+```bash
 python -m venv .venv
-# Windows:  .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
+.venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
+
+Start FastAPI:
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 4 — Seed Demo Data
+Backend API:
+
+```text
+http://localhost:8000
+```
+
+Interactive API documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+## 4. Seed demo data
+
+From the repository root:
 
 ```bash
-# From repo root, in a new terminal
 python seed_now.py
 ```
 
-### 5 — Frontend
+This populates the system with deterministic demo data for testing and presentation.
+
+---
+
+## 5. Start the frontend
+
+Open a new terminal:
 
 ```bash
 cd apps/web
 npm install
-npm run dev              # http://localhost:5173
+npm run dev
 ```
 
-> API docs available at `http://localhost:8000/docs`
+The frontend will be available at:
 
----
-
-## Project Structure
-
-```
-ResQMesh/
-├── apps/
-│   ├── api/                  # FastAPI backend
-│   │   ├── app/
-│   │   │   ├── config.py     # Typed env-var config
-│   │   │   ├── contracts.py  # Canonical Python types
-│   │   │   ├── db/           # SQLAlchemy models + async engine
-│   │   │   ├── middleware.py # Rate limiting + payload size enforcement
-│   │   │   ├── observability.py # Privacy-minimised structured logging
-│   │   │   ├── routes/       # /v1/events, /v1/resources, /v1/assignments, /v1/sync
-│   │   │   ├── security.py   # Ed25519 verification + canonical JSON
-│   │   │   └── services/     # Event, resource, assignment, sync services
-│   │   └── requirements.txt  # Pinned dependencies
-│   └── web/                  # React 18 PWA
-│       └── src/
-│           ├── features/     # sos · relay · responder · resources
-│           └── lib/          # crypto · relay · storage
-├── docs/                     # Architecture, API contract, design decisions
-├── infra/
-│   └── compose.yaml          # Local PostgreSQL 16
-├── packages/
-│   ├── contracts/            # Shared TypeScript types (single source of truth)
-│   └── fixtures/             # Deterministic test data + QA scripts
-├── .env.example              # Environment variable template
-├── CONTRIBUTING.md           # Developer setup and contribution guide
-├── SECURITY.md               # Security policy and design notes
-└── seed_now.py               # One-command demo data seed
+```text
+http://localhost:5173
 ```
 
 ---
 
-## API Endpoints
+# 📸 Screenshots
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/healthz` | Health check |
-| `POST` | `/v1/events` | Submit signed SOS / road report envelope |
-| `GET` | `/v1/events` | List events for an incident |
-| `POST` | `/v1/resources` | Register community resource |
-| `GET` | `/v1/resources` | List available resources |
-| `POST` | `/v1/assignments` | Create rescue assignment |
-| `GET` | `/v1/assignments` | List assignments |
-| `POST` | `/v1/sync/pull` | Pull events since a cursor (for bridge sync) |
-| `POST` | `/v1/sync/ack` | Acknowledge synced event batch |
-| `GET` | `/v1/reports` | Road condition reports |
-
-Full API contract: [`docs/05_API_CONTRACT.md`](docs/05_API_CONTRACT.md)
+> A live look at ResQMesh in action — every screen works fully offline.
 
 ---
 
-## Security
+**Responder Command Console — Incident Queue, Live Map & Trust Panel**
 
-- All event envelopes are signed with **Ed25519** keys generated on-device; only public keys transit the network.
-- Rate limiting: 60 req/min standard · 120 req/min for `CRITICAL` SOS events.
-- No plaintext PII in any log entry (privacy-minimised structured logging).
-- See [`SECURITY.md`](SECURITY.md) for the full security design and vulnerability reporting process.
+![Responder Console showing incident queue with CRITICAL and HIGH priority events pinned on a live Mangaluru map, with Trust & Provenance sidebar displaying Ed25519 signature verification and 99% confidence score](docs/screenshots/1.jpg)
 
 ---
 
-## Documentation
+**Knowledge Graph + AI Operational Assistant**
+
+![Knowledge Graph showing SOS-to-resource relationship graph with the Relay Disaster Operational Assistant chatbot suggesting nearest shelters and hospital capacities in real time](docs/screenshots/2.jpg)
+
+---
+
+**Knowledge Graph — Shortest Route Calculation**
+
+![Knowledge Graph rendering the shortest evacuation route — Ullal Beach Road to Coastal connector to NH-66 north — with a 28.2 km simulated path](docs/screenshots/3.jpg)
+
+---
+
+**Live Relay Setup — Multi-Device QR Pairing**
+
+![Live relay setup modal showing QR codes for Victim Phone and Relay Device, enabling mesh relay across three devices on a shared Wi-Fi or hotspot with no internet required](docs/screenshots/4.jpg)
+
+---
+
+# 🎬 Demo Video
+
+[![Watch the ResQMesh Demo](https://img.youtube.com/vi/kIQ8pR2qTfY/maxresdefault.jpg)](https://youtu.be/kIQ8pR2qTfY)
+
+> *Click the thumbnail above to watch the full demo on YouTube.*
+
+---
+
+# 🧪 Demo Flow
+
+
+A complete ResQMesh demonstration can be performed using the following flow:
+
+```text
+1. Open Survivor Interface
+          │
+          ▼
+2. Disable Internet / Simulate Offline Mode
+          │
+          ▼
+3. Create Emergency SOS
+          │
+          ▼
+4. Event Signed Locally
+          │
+          ▼
+5. Event Stored in IndexedDB
+          │
+          ▼
+6. Event Relayed Through Mesh
+          │
+          ▼
+7. Rescue Vehicle Receives Event
+          │
+          ▼
+8. Network Connectivity Restored
+          │
+          ▼
+9. Bridge Synchronizes With Backend
+          │
+          ▼
+10. Responder Console Updates
+```
+
+---
+
+# 📚 Documentation
 
 | Document | Purpose |
-|---------|---------|
-| [`docs/01_PROBLEM_AND_SCOPE.md`](docs/01_PROBLEM_AND_SCOPE.md) | Problem definition and scope boundaries |
-| [`docs/02_MASTER_SPEC.md`](docs/02_MASTER_SPEC.md) | Product requirements |
-| [`docs/03_ARCHITECTURE_DESIGN.md`](docs/03_ARCHITECTURE_DESIGN.md) | System architecture |
-| [`docs/04_DATA_AND_PRIVACY.md`](docs/04_DATA_AND_PRIVACY.md) | Data model and privacy controls |
-| [`docs/05_API_CONTRACT.md`](docs/05_API_CONTRACT.md) | REST API reference |
-| [`docs/11_DECISIONS.md`](docs/11_DECISIONS.md) | Architecture decision log |
-| [`docs/16_BUILD_CONTRACT.md`](docs/16_BUILD_CONTRACT.md) | Frozen implementation contract (enums, limits, wire format) |
-| [`PITCH_DECK_AND_JURY_DEFENSE.md`](PITCH_DECK_AND_JURY_DEFENSE.md) | Jury pitch deck and Q&A guide |
+|---|---|
+| [`01_PROBLEM_AND_SCOPE.md`](docs/01_PROBLEM_AND_SCOPE.md) | Problem definition and scope |
+| [`02_MASTER_SPEC.md`](docs/02_MASTER_SPEC.md) | Product requirements |
+| [`03_ARCHITECTURE_DESIGN.md`](docs/03_ARCHITECTURE_DESIGN.md) | System architecture |
+| [`04_DATA_AND_PRIVACY.md`](docs/04_DATA_AND_PRIVACY.md) | Data model and privacy controls |
+| [`05_API_CONTRACT.md`](docs/05_API_CONTRACT.md) | REST API specification |
+| [`11_DECISIONS.md`](docs/11_DECISIONS.md) | Architecture decision log |
+| [`16_BUILD_CONTRACT.md`](docs/16_BUILD_CONTRACT.md) | Frozen implementation contract |
+| [`PITCH_DECK_AND_JURY_DEFENSE.md`](PITCH_DECK_AND_JURY_DEFENSE.md) | Demo, pitch, and jury Q&A |
+| [`SECURITY.md`](SECURITY.md) | Security architecture and vulnerability reporting |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution guidelines |
 
 ---
 
-## Team
+# 🛡️ Design Principles
 
-ResQMesh was built in 12 hours by a 6-member team:
+ResQMesh is built around five principles:
+
+### 1. Disconnected First
+
+The system must remain useful even when the internet is unavailable.
+
+### 2. Local First
+
+Critical information should be created and persisted locally before relying on synchronization.
+
+### 3. Eventually Connected
+
+Connectivity is treated as an opportunity for synchronization rather than a permanent requirement.
+
+### 4. Bounded Propagation
+
+Mesh communication is deliberately constrained to prevent uncontrolled network growth.
+
+### 5. Cryptographically Verifiable
+
+Critical events should be verifiable rather than relying entirely on trust in the transport network.
+
+---
+
+# 👥 Team
+
+ResQMesh was built in **12 hours by a 6-member team**.
 
 | Role | Responsibility |
-|------|---------------|
-| Architecture & Integration Lead | Contracts, docs, cross-lane integration |
-| Frontend / PWA | SOS form, responder console, resource UI |
-| Mesh / P2P Networking | WebSocket relay adapter, hop-by-hop gossip |
-| Backend / Data | FastAPI routes, services, PostgreSQL schema |
-| Security, Reliability & Observability | Ed25519 crypto, rate limiting, structured logging |
-| QA, Demo & Accessibility | Fixtures, acceptance tests, evidence register |
+|---|---|
+| 🏗️ **Architecture & Integration** | Contracts, documentation, system integration |
+| 🎨 **Frontend / PWA** | SOS interface, responder console, resource UI |
+| 📡 **Mesh / P2P Networking** | WebSocket relay adapter and hop-by-hop gossip |
+| 🗄️ **Backend / Data** | FastAPI routes, services, PostgreSQL schema |
+| 🔐 **Security / Reliability** | Ed25519 cryptography, rate limiting, observability |
+| 🧪 **QA / Demo / Accessibility** | Fixtures, acceptance tests, demo flow, evidence register |
 
 ---
 
-## License
+# 🗺️ Roadmap
 
-MIT © 2026 ResQMesh Team
+Potential future improvements include:
+
+- [ ] Native Android/iOS mesh transport
+- [ ] Bluetooth Low Energy transport
+- [ ] Wi-Fi Direct transport
+- [ ] Opportunistic device-to-device discovery
+- [ ] Multi-transport relay selection
+- [ ] Battery-aware relay scheduling
+- [ ] Geographic event prioritization
+- [ ] More sophisticated resource matching
+- [ ] Regional emergency authority integration
+- [ ] Large-scale disaster simulation
+- [ ] Multi-region deployment
+- [ ] Hardware-based emergency communication bridges
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before submitting a pull request.
+
+For security vulnerabilities, please follow the process described in [`SECURITY.md`](SECURITY.md).
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+Copyright © 2026 ResQMesh Team.
+
+---
+
+<div align="center">
+
+### 🚨 ResQMesh
+
+**Connectivity should not be a prerequisite for survival.**
+
+Built with ❤️ for resilient communities.
+
+</div>
