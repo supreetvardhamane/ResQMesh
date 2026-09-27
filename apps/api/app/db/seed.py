@@ -15,7 +15,6 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-import sqlalchemy
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -25,8 +24,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from apps.api.app.db.models import Base, EventModel, ResourceModel
 
+import os
 
-DATABASE_URL = "postgresql+psycopg://resqmesh:resqmesh_dev@localhost:5432/resqmesh"
+# Read from environment; fall back to the local-dev default defined in .env.example.
+# Never commit real credentials here — use a .env file (git-ignored) or a secrets manager.
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+psycopg://resqmesh:resqmesh_dev@localhost:5432/resqmesh",
+)
 FIXTURES_DIR = Path(__file__).resolve().parents[4] / "packages" / "fixtures"
 
 

@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Python tests + type check
+  # ─────────────────────────────────────────────────────────────
+  python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: resqmesh
+          POSTGRES_PASSWORD: resqmesh_dev
+          POSTGRES_DB: resqmesh
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://resqmesh:resqmesh_dev@localhost:5432/resqmesh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r apps/api/requirements.txt pytest pytest-asyncio
+
+      - name: Run tests
+        run: pytest apps/api/tests/ -v
+
+  # ─────────────────────────────────────────────────────────────
+  # Frontend type-check and build
+  # ─────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+  # ─────────────────────────────────────────────────────────────
+  # Fixture validation
+  # ─────────────────────────────────────────────────────────────
+  fixtures:
+    name: Fixture Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cryptography
+        run: pip install "cryptography>=43.0.0"
+
+      - name: Validate fixtures
+        run: python packages/fixtures/validate_fixtures.py

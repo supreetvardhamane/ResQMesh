@@ -88,9 +88,12 @@ def load_config() -> AppConfig:
     Load configuration from environment variables.
     Fails safely at startup if required config is missing.
     """
+    # LOCAL_DEV_ONLY default — matches infra/compose.yaml and .env.example.
+    # In any internet-facing deployment, set DATABASE_URL via environment variable
+    # or a secrets manager and never rely on this fallback.
     db_url = os.environ.get(
         "DATABASE_URL",
-        "postgresql+psycopg://resqmesh:resqmesh_dev@localhost:5432/resqmesh",
+        "postgresql+psycopg://resqmesh:resqmesh_dev@localhost:5432/resqmesh",  # noqa: S105 local-dev-only
     )
 
     config = AppConfig(

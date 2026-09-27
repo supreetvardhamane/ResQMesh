@@ -1,0 +1,123 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run every Monday at 07:00 UTC
+    - cron: "0 7 * * 1"
+
+permissions:
+  contents: read
+  security-events: write   # Required for CodeQL / SARIF uploads
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Secret detection with Gitleaks
+  # ─────────────────────────────────────────────────────────────
+  gitleaks:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Full history required for Gitleaks
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Python dependency vulnerability audit (pip-audit)
+  # ─────────────────────────────────────────────────────────────
+  pip-audit:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit Python dependencies
+        run: pip-audit -r apps/api/requirements.txt --strict
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Node.js dependency vulnerability audit (npm audit)
+  # ─────────────────────────────────────────────────────────────
+  npm-audit:
+    name: Node.js Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Audit npm packages
+        run: npm audit --audit-level=high
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 4: Static analysis — Python (Bandit)
+  # ─────────────────────────────────────────────────────────────
+  bandit:
+    name: Python Static Analysis (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit
+        run: |
+          bandit -r apps/api/app/ \
+            --severity-level medium \
+            --confidence-level medium \
+            -x apps/api/tests/ \
+            --format txt
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 5: TypeScript type-check (catches accidental any / unsafe ops)
+  # ─────────────────────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tsc --noEmit
+        run: npm run typecheck

@@ -1,6 +1,15 @@
 # ResQMesh — Local Development Docker Compose
-# PostgreSQL 16 (no extensions) as defined in 16_BUILD_CONTRACT.md
-# Usage: docker compose -f infra/compose.yaml up -d
+# PostgreSQL 16 (no extensions) as defined in docs/16_BUILD_CONTRACT.md
+#
+# Usage:
+#   docker compose -f infra/compose.yaml up -d
+#
+# ⚠️  LOCAL DEVELOPMENT ONLY
+# The credentials below (resqmesh / resqmesh_dev) are placeholder values for
+# local development. They match the defaults in .env.example and must NEVER be
+# used in any internet-facing or production deployment.
+# For production, inject real credentials via environment variables or a secrets
+# manager and do NOT use this compose file directly.
 
 services:
   postgres:
@@ -9,7 +18,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: resqmesh
-      POSTGRES_PASSWORD: resqmesh_dev
+      POSTGRES_PASSWORD: resqmesh_dev   # local-dev placeholder — see note above
       POSTGRES_DB: resqmesh
     ports:
       - "5432:5432"

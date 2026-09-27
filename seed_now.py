@@ -1,3 +1,16 @@
+"""
+ResQMesh — Root-level Database Seed Script
+
+Seeds the demo incident (demo-flood-2026) with fixture data from
+packages/fixtures/incident.demo.json via the app config (DATABASE_URL env var).
+
+Usage (from repo root):
+    python seed_now.py
+
+Requires:
+    - DATABASE_URL set (or defaults from .env / .env.example)
+    - PostgreSQL 16 running (see infra/compose.yaml)
+"""
 import asyncio
 import sys
 import json
@@ -78,7 +91,7 @@ async def main():
     async with sf() as session:
         ev_count = (await session.execute(text("SELECT COUNT(*) FROM events"))).scalar()
         res_count = (await session.execute(text("SELECT COUNT(*) FROM resources"))).scalar()
-        print(f"\nSEED COMPLETE: {ev_count} events, {res_count} resources in Neon DB")
+        print(f"\nSEED COMPLETE: {ev_count} events, {res_count} resources in database")
 
     await engine.dispose()
 

@@ -1,0 +1,15 @@
+[tool.bandit]
+# Exclude test fixtures and the test suite from Bandit static analysis.
+# Test files intentionally contain hardcoded test values.
+exclude_dirs = ["apps/api/tests", "packages/fixtures"]
+
+# B105 (hardcoded_password_string): suppressed in config.py and seed.py where the
+# hardcoded value is an explicitly documented LOCAL_DEV_ONLY default that matches
+# the .env.example template and is never used in production.
+# B104 (hardcoded_bind_all_interfaces): api_host defaults to 0.0.0.0 — intentional
+# for containerised dev; production deployments set API_HOST explicitly.
+skips = []
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["apps/api/tests"]

@@ -5,12 +5,18 @@
 .env.*
 !.env.example
 !.env.template
+.env.local
 *.secret
 *.secrets
 secrets/
 .secrets/
 credentials/
 credentials.json
+
+# Security scan outputs
+bandit-report.json
+bandit-report.txt
+pip-audit-report.json
 
 # Private keys & certificates
 *.pem
