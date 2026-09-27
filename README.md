@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🚨 ResQMesh
 
@@ -65,6 +65,38 @@ ResQMesh is a disconnected-first coordination layer that turns civilian devices 
         │   Assignment projection              │
         └──────────────────────────────────────┘
 ```
+
+---
+
+## 📸 Screenshots
+
+> A live look at ResQMesh in action — every screen works fully offline.
+
+**Responder Command Console — Incident Queue, Live Map & Trust Panel**
+![Responder Console — Incident queue with CRITICAL/HIGH priority events on a live map, Trust & Provenance sidebar showing Ed25519 signature verification and 99% confidence score](docs/screenshots/1.jpg)
+
+---
+
+**Knowledge Graph + AI Operational Assistant**
+![Knowledge Graph view showing SOS-to-resource relationship graph, with the Relay Disaster Operational Assistant chatbot suggesting nearest shelters and hospital capacities](docs/screenshots/2.jpg)
+
+---
+
+**Knowledge Graph — Shortest Route Calculation**
+![Knowledge Graph rendering the shortest evacuation route: Ullal Beach Road → Coastal connector → NH-66 north, 28.2 km simulated path](docs/screenshots/3.jpg)
+
+---
+
+**Live Relay Setup — Multi-Device QR Pairing**
+![Live relay setup modal with QR codes for Victim Phone and Relay Device, enabling mesh relay across three devices on a shared Wi-Fi or hotspot — no internet required](docs/screenshots/4.jpg)
+
+---
+
+## 🎬 Demo Video
+
+[![Watch the ResQMesh Demo](https://img.youtube.com/vi/kIQ8pR2qTfY/maxresdefault.jpg)](https://youtu.be/kIQ8pR2qTfY)
+
+> *Click the thumbnail to watch the full demo on YouTube.*
 
 ---
 
@@ -226,4 +258,3 @@ ResQMesh was built in 12 hours by a 6-member team:
 ## License
 
 MIT © 2026 ResQMesh Team
-]]>
